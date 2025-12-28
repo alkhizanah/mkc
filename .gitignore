@@ -1,2 +1,5 @@
 *.out
 mkc
+build/*
+tests/*
+tests

@@ -97,13 +97,18 @@ uint64_t hash_file(const fs::path &p, LOGGER) {
 
 std::unordered_map<std::string, uint64_t> old_hashes;
 
+
+// TODO: for some reason this function errors out when I test it with some bogus cache file 
+// that i made. It fails after reading the first line, throwing [EXCEPTION] basic_ios::clear: iostream error 
+// I need to fix that, but I'll try generating real hashes first
 void load_cache(std::string cachePath, LOGGER) {
-  debug("number of cached hashes: " + std::to_string(old_hashes.size()));
   if (!fs::exists(cachePath)) {
     logger.failLog("file does not exist: " + cachePath, "function: load_cache() failed");
     return;
   }
-  std::ifstream in(cachePath); ENABLE_EXCEPTIONS;
+
+  std::ifstream in(cachePath); 
+  ENABLE_EXCEPTIONS;
   std::string path;
   uint64_t h;
 
@@ -185,18 +190,18 @@ int main(int argc, char *argv[]) {
   Logger logger(config.log_verbosity);
 
   // // =============== TODO: this is to be removed later
-  // if (config.rebuild_all) {
-  //   scan("src", logger);
-  //   mark_dirty(config, logger);
-  //   load_cache("build/.cache", logger);
-  //
-  //   for (auto &[_, s] : sources)
-  //     parse_includes(s, logger);
-  //
-  //   mark_dirty(config, logger);
-  //   std::cout << std::endl;
-  //   return 0;
-  // }
+  if (config.rebuild_all) {
+    scan("src", logger);
+    mark_dirty(config, logger);
+    load_cache("build/.cache", logger);
+
+    for (auto &[_, s] : sources)
+      parse_includes(s, logger);
+
+    mark_dirty(config, logger);
+    std::cout << std::endl;
+    return 0;
+  }
   // // ==========================================
 
   scan("src", logger);
