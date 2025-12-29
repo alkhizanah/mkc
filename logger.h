@@ -15,34 +15,32 @@
 #define RESET           "\033[0m"
 
 
-static void debug(std::string message) {
-  std::cout << "\n[" << BLUE << "DEBUG" << RESET << "] " << message;
-}
-class Logger {
-private: 
-  Verbosity vb;
-public:
-  Logger(Verbosity verbosity) : vb(verbosity) {};
 
-  void successLog(std::string message) const {
+class Logger {
+private:
+  static Verbosity vb;
+
+public:
+  static void setVerbosity(Verbosity verbosity) { vb = verbosity; }
+  static void successLog(const std::string &message) {
     std::cout << "\n[" << GREEN << "LOG" << RESET << "] " << message;
   }
-  void failLog(std::string message) const {
-    std::cout << "\n[" << RED << "LOG" << RESET << "] " << message;
-  }
-  void failLog(std::string message, const char * exception) const {
+  static void failLog(const std::string &message, const char *exception = nullptr) {
     std::cout << "\n[" << RED << "LOG" << RESET << "] " << message;
     if (vb == Verbosity::verbose) {
-      if (exception) {
-        std::cout << "\n[" << RED << "EXCEPTION" << RESET << "] " << exception;
-      } else {
-        std::cout << "\n[" << RED << "EXCEPTION" << RESET << "] " << "unknown exception.";
-      }
+      std::cout << "\n[" << RED << "EXCEPTION" << RESET << "] ";
+      std::cout << (exception ? exception : "unknown exception.") << std::endl;
     }
   }
-  void warningLog(std::string message) const {
+  static void debug(const std::string &message) {
+    if (vb != Verbosity::verbose) return;
+    std::cout << "\n[" << BLUE << "DEBUG" << RESET << "] " << message;
+  }
+  static void warningLog(const std::string &message) {
     std::cout << "\n[" << YELLOW << "LOG" << RESET << "] " << message;
   }
 };
+
+Verbosity Logger::vb = Verbosity::normal;
 
 #endif
