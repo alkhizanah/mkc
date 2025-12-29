@@ -99,6 +99,7 @@ uint64_t hash_file(const fs::path &p) {
   ENABLE_EXCEPTIONS(in);
   uint64_t hash = 1469598103934665603ULL;
   char c;
+
   try {
     while (in.get(c)) {
       hash ^= static_cast<unsigned char>(c);
@@ -131,12 +132,14 @@ void save_cache(const fs::path &cachePath) {
   fs::path tempPath = cachePath;
   tempPath += ".tmp";
   std::ofstream out(tempPath);
-  ENABLE_EXCEPTIONS(out); 
+  ENABLE_EXCEPTIONS(out);
 
   try {
-    for (const auto &[path, hash] : old_hashes) {
-      out << path << " " << hash << "\n";
-    }
+    for (auto &[_, s] : sources)
+      out << s.path.string() << " " << s.hash << "\n";
+
+    for (auto &[_, h] : headers)
+      out << h.path.string() << " " << h.hash << "\n"; // HERE: maybe we don't need to convert to string, but my intuition says this for now
 
     out.flush();
     out.close();
@@ -193,16 +196,19 @@ void mark_modified(const Config& conf) {
 
     if (!old_hashes.count(src.path.string())          // < if file doesn't exist in our set of hashed files (it wasn't there last time we built)
         || old_hashes[src.path.string()] != src.hash // <  or it does exist, but the hash doesn't match the new one (the contents changed)
-        || !fs::exists(src.object)) {               // < or it exists, and its hash exists, but its object file doesn't
+       /* || !fs::exists(src.object) */) {               // < or it exists, and its hash exists, but its object file doesn't
       src.modified = true;                            // < then mark it as modified and move on to the next file
       Logger::debug("mark_modified(): " + src.path.string() + " marked as modified");
       continue;
     }
 
+    Logger::debug("mark_modified(): source " + src.path.string() + " has include count: " + std::to_string(src.includes.size()));
     // at this point we know the source didn't change in any way, we check if the headers did
-    for (auto &inc : src.includes) {
+    for (const fs::path &inc : src.includes) {
+      Logger::debug("mark_modified(): inside for loop");
       auto pathOfInclude = inc.string();
       auto it = headers.find(pathOfInclude);
+      Logger::debug("mark_modified(): " + it->second.path.string());
       if (it == headers.end()) { // if this is an external header that we aren't tracking
         if (!conf.track_external_headers) {
           continue;
@@ -215,6 +221,7 @@ void mark_modified(const Config& conf) {
       }
 
       it->second.hash = hash_file(it->second.path);
+      Logger::debug("mark_modified(): " + it->second.path.string() + " has been hashed.");
 
       if (old_hashes[pathOfInclude] != it->second.hash) { // if the hash that we just computed isn't the same as the one in the cached hashes
         src.modified = true;
@@ -230,6 +237,7 @@ void mark_modified(const Config& conf) {
 int compile() {
   for (auto &[_, src] : sources) {
     if (src.modified) {
+      // TODO: if any compilation fails, abort, do not write cache
       Logger::successLog("compiled source: \"" + src.path.string() + "\"");
     }
   }
@@ -271,15 +279,16 @@ int main(int argc, char *argv[]) {
   //   return 0;
   // }
 
-  scan("src");
+  scan(".");
   load_cache("build/.cache");
 
   for (auto &[_, s] : sources)
     parse_includes(s);
 
   mark_modified(config);
-  compile();
+  if (compile() == 0) {
+    save_cache("build/.cache");
+  }
   std::cout << std::endl;
   return 0;
 }
-
