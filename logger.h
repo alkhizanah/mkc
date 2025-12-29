@@ -4,6 +4,9 @@
 #include <string>
 #include "config.h"
 
+#define BLUE            "\033[34m"
+#define MAGENTA         "\033[35m"
+#define CYAN            "\033[36m"
 #define WHITE           "\033[37m"
 #define BLACK           "\033[30m"
 #define RED             "\033[31m"
@@ -13,7 +16,7 @@
 
 
 static void debug(std::string message) {
-  std::cout << "\n[" << BLACK << "DEBUG" << RESET << "] " << message;
+  std::cout << "\n[" << BLUE << "DEBUG" << RESET << "] " << message;
 }
 class Logger {
 private: 
