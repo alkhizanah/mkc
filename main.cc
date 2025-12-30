@@ -51,6 +51,17 @@ std::string normalize_path(const fs::path& p) {
   }
 }
 
+// relative instead of absolute for readability in the logs
+std::string readable_path(const fs::path& p) {
+  try {
+    return fs::relative(p, fs::current_path()).string();
+  } catch (...) {
+    return p.string();
+  }
+}
+
+
+
 void scan(const fs::path &root) {
   if (!fs::exists(root)) {
     Logger::failLog("directory does not exist: " + root.string(), " function: scan() failed.");
@@ -66,27 +77,28 @@ void scan(const fs::path &root) {
 
       auto ext = p.path().extension().string();
       std::string normalized = normalize_path(p.path());
+      std::string pretty_path = readable_path(p.path());
 
       if (ext == ".cpp" || ext == ".c" || ext == ".cc") {
         sources[normalized] = {p.path(), fs::path("build/obj") / p.path().filename().replace_extension(".o")};
-        Logger::successLog("found source file: " + normalized);
+        Logger::successLog("found source file: " + pretty_path);
       } else if (ext == ".h") {
         HeaderFile hf;
         hf.path = p.path();
         hf.hash = hash_file(p.path());
         headers[normalized] = hf;
-        Logger::successLog("found header file: " + normalized);
-        Logger::debug("hashed header on scan: " + normalized);
+        Logger::successLog("found header file: " + pretty_path);
+        Logger::debug("hashed header on scan: " + pretty_path + " with hash: " + std::to_string(hf.hash));
       }
     }
   } catch (const fs::filesystem_error &e) {
-    Logger::failLog("error iterating over \"" + root.string() + "directory, please check for permission denial, symlink loops, etc.", e.what());
+    Logger::failLog("error iterating over \"" + root.string() + "\" directory, please check for permission denial, symlink loops, etc.", e.what());
   }
 }
 
 void parse_includes(SourceFile &src) {
   if (!fs::exists(src.path)) {
-    Logger::failLog("file does not exist: " + src.path.string(), " function: parse_includes() failed.");
+    Logger::failLog("file does not exist: " + readable_path(src.path), " function: parse_includes() failed.");
   }
   std::ifstream in(src.path);
   ENABLE_EXCEPTIONS(in);
@@ -97,17 +109,17 @@ void parse_includes(SourceFile &src) {
         auto start = line.find('"') + 1;
         auto end = line.find('"', start);
         src.includes.emplace_back(line.substr(start, end - start));
-        Logger::debug("found include: " + line.substr(start, end - start) + " in source file: " + src.path.string());
+        Logger::debug("found include: " + line.substr(start, end - start) + " in source file: " + readable_path(src.path));
       }
     }
   } catch (const std::ios_base::failure &e) {
-    Logger::failLog("parse_includes(): failed to parse includes for \"" + src.path.string() + "\"", e.what());
+    Logger::failLog("parse_includes(): failed to parse includes for \"" + readable_path(src.path) + "\"", e.what());
   }
 }
 
 uint64_t hash_file(const fs::path &p) {
   if (!fs::exists(p)) {
-    Logger::failLog("file does not exist: " + p.string(), " function: hash_file() failed.");
+    Logger::failLog("file does not exist: " + readable_path(p), " function: hash_file() failed.");
   }
 
   std::ifstream in(p, std::ios::binary); 
@@ -121,9 +133,9 @@ uint64_t hash_file(const fs::path &p) {
       hash *= 1099511628211ULL;
     }
   } catch (const std::ios_base::failure &e) {
-    Logger::failLog("hash_file(): failed to read \"" + p.string() + "\"", e.what());
+    Logger::failLog("hash_file(): failed to read \"" + readable_path(p) + "\"", e.what());
   }
-  Logger::debug("hashed file: " + p.string());
+  Logger::debug("hashed file: " + readable_path(p));
   Logger::debug("hash: " + std::to_string(hash));
   return hash;
 }
@@ -139,7 +151,7 @@ void save_cache(const fs::path &cachePath) {
   //   try {
   //     fs::create_directories(parentDir);
   //   } catch (const fs::filesystem_error &e) {
-  //     Logger::failLog("save_cache(): failed to create directory \"" + parentDir.string() + "\"", e.what());
+  //     Logger::failLog("save_cache(): failed to create directory \"" + readable_path(parentDir) + "\"", e.what());
   //     return;
   //   }
   // }
@@ -154,7 +166,7 @@ void save_cache(const fs::path &cachePath) {
       out << s.path.string() << " " << s.hash << "\n";
 
     for (auto &[_, h] : headers)
-      out << h.path.string() << " " << h.hash << "\n"; // HERE: maybe we don't need to convert to string, but my intuition says this for now
+      out << h.path.string() << " " << h.hash << "\n";
 
     out.flush();
     out.close();
@@ -166,7 +178,7 @@ void save_cache(const fs::path &cachePath) {
     fs::rename(tempPath, cachePath);
 
   } catch (const std::ios_base::failure &e) {
-    Logger::failLog("save_cache(): failed to write \"" + cachePath.string() + "\"", e.what());
+    Logger::failLog("save_cache(): failed to write \"" + readable_path(cachePath) + "\"", e.what());
     cleanTemp(tempPath);
   } catch (const fs::filesystem_error &e) {
     Logger::failLog("save_cache(): failed to rename temporary file", e.what());
@@ -174,7 +186,7 @@ void save_cache(const fs::path &cachePath) {
   }
 
   for (const auto& inc : headers) {
-      Logger::debug("headers that we have: " + inc.first + " | " + inc.second.path.string() + " | " + std::to_string(inc.second.hash));
+    Logger::debug("cached header: " + readable_path(inc.second.path) + " | hash: " + std::to_string(inc.second.hash));
   }
 }
 
@@ -184,7 +196,7 @@ void cleanTemp(const fs::path &tempPath) {
       fs::remove(tempPath);
     }
   } catch (...) {
-    Logger::warningLog("clean up error while removing: \"" + tempPath.string() + "\"");
+    Logger::warningLog("clean up error while removing: \"" + readable_path(tempPath) + "\"");
   }
 }
 
@@ -205,7 +217,7 @@ void load_cache(const fs::path &cachePath) {
       old_hashes[path] = h;
     }
   } catch (const std::ios_base::failure &e) {
-    Logger::failLog("load_cache(): failed to read \"" + cachePath.string() + "\"", e.what());
+    Logger::failLog("load_cache(): failed to read cache at \"" + readable_path(cachePath) + "\"", e.what());
   }
 }
 
@@ -213,45 +225,52 @@ void mark_modified(const Config& conf) {
   for (auto &[_, src] : sources) {
     src.hash = hash_file(src.path);
 
-    if (!old_hashes.count(src.path.string())          // < if file doesn't exist in our set of hashed files (it wasn't there last time we built)
+    if (!old_hashes.count(src.path.string())          // < if source file doesn't exist in our set of hashed files (it wasn't there last time we built)
         || old_hashes[src.path.string()] != src.hash // <  or it does exist, but the hash doesn't match the new one (the contents changed)
-       /* || !fs::exists(src.object) */) {               // < or it exists, and its hash exists, but its object file doesn't
+      // NOTE: we are momentarily disabling 
+      // obj file check because we don't compile yet
+       /*|| !fs::exists(src.object) */) {               // < or it exists, and its hash exists, but its object file doesn't
       src.modified = true;                            // < then mark it as modified and move on to the next file
-      Logger::debug("mark_modified(): " + src.path.string() + " marked as modified");
+      Logger::debug("marked as modified: " + readable_path(src.path));
       continue;
     }
 
-    Logger::debug("mark_modified(): source " + src.path.string() + " has include count: " + std::to_string(src.includes.size()));
+    // Logger::debug("checking source: " + readable_path(src.path) + " (includes: " +  std::to_string(src.includes.size()) + ")");
 
     // at this point we know the source didn't change in any way, we check if the headers did
     for (const fs::path &inc : src.includes) {
-      auto pathOfInclude = inc.string();
-      Logger::debug("mark_modified(): the size of the headers map is: " + std::to_string(headers.size()));
-      auto it = headers.find(pathOfInclude);
+      fs::path resolved_include = src.path.parent_path() / inc; // NOTE: insert a debug here to visualize diff
+      std::string normalized = normalize_path(resolved_include);
+      std::string pretty_path = readable_path(resolved_include);
 
-      // TODO: we stopped fixing stuff HERE. 
-      // situation: the program considers the headers external for some reason.
-      // if external headers is set to true, it compiles the headers that are directly in the root dir 
-      // if its set to false, it compiles no headers at all.
+      Logger::debug("  checking include: " + inc.string() + " -> " + pretty_path);
+
+      auto it = headers.find(normalized);
+
       if (it == headers.end()) { // if this is an external header that we aren't tracking
         if (!conf.track_external_headers) {
+          Logger::debug("  skipping external header: " + pretty_path);
           continue;
         }
+
+        Logger::debug("  tracking new external header: " + pretty_path);
         HeaderFile hf;
-        hf.path = inc;
-        hf.hash = hash_file(inc);
-        it = headers.emplace(pathOfInclude, std::move(hf)).first;
+        hf.path = resolved_include;
+        hf.hash = hash_file(resolved_include);
+        it = headers.emplace(normalized, std::move(hf)).first;
       }
-      it->second.hash = hash_file(it->second.path);
-      Logger::debug("mark_modified(): " + it->second.path.string() + " has been hashed.");
 
+      // uint64_t current_hash = hash_file(it->second.path);
+      // Logger::debug("mark_modified(): " + readable_path(it->second.path) +
+      //               " current hash: " + std::to_string(current_hash));
 
-        auto oh = old_hashes.find(pathOfInclude);
-        if (oh == old_hashes.end() || oh->second != it->second.hash)  { // if the hash that we just computed isn't the same as the one in the cached hashes
+      auto oh = old_hashes.find(normalized);
+      if (oh == old_hashes.end() // if the hash isn't in the old hashes or..
+          || oh->second != it->second.hash) { // if it is in the old hashes but
+                                              // it has been modified.
         src.modified = true;
-        Logger::debug("mark_modified(): " + src.path.string() + " marked as modified");
-        break; // we break once any of the headers triggers recompilation rather
-               // than checking all of them
+        Logger::debug("marked as modified due to: " + readable_path(it->second.path));
+        break;
       }
     }
   }
@@ -262,7 +281,7 @@ int compile() {
   for (auto &[_, src] : sources) {
     if (src.modified) {
       // TODO: if any compilation fails, abort, do not write cache
-      Logger::successLog("compiled source: \"" + src.path.string() + "\"");
+      Logger::successLog("compiled source: \"" + readable_path(src.path) + "\"");
     }
   }
   return 0;
@@ -314,6 +333,7 @@ int main(int argc, char *argv[]) {
   if (compile() == 0) {
     save_cache("build/.cache");
   }
+
   std::cout << std::endl;
   return 0;
 }

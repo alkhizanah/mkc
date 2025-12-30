@@ -15,6 +15,8 @@
 #define RESET           "\033[0m"
 #define FLUSH std::cout.flush()
 
+// TODO: convert some debugs into info logs to separate dev logs from 
+// the logs that are a concern for the end-user
 
 class Logger {
 private:
@@ -29,9 +31,13 @@ public:
     FLUSH;
   }
 
+  static void infoLog(const std::string &message) {
+    if (vb != Verbosity::verbose) return;
+    std::cout << "\n[" << CYAN << "INFO" << RESET << "] " << message;
+  }
+
   static void successLog(const std::string &message) {
     std::cout << "\n[" << GREEN << "LOG" << RESET << "] " << message;
-    FLUSH;
   }
 
   static void failLog(const std::string &message, const char *exception = nullptr) {
@@ -40,12 +46,10 @@ public:
       std::cout << "\n[" << RED << "EXCEPTION" << RESET << "] ";
       std::cout << (exception ? exception : "unknown exception.") << std::endl;
     }
-    FLUSH;
   }
 
   static void warningLog(const std::string &message) {
     std::cout << "\n[" << YELLOW << "LOG" << RESET << "] " << message;
-    FLUSH;
   }
 };
 
