@@ -39,6 +39,17 @@ struct HeaderFile {
 
 std::unordered_map<std::string, SourceFile> sources;
 std::unordered_map<std::string, HeaderFile> headers;
+uint64_t hash_file(const fs::path &p);
+
+
+// helper function to fix the issue of paths being "./logger.h" instead of "logger.h" which mismatches lookups
+std::string normalize_path(const fs::path& p) {
+  try {
+    return fs::weakly_canonical(p).string();
+  } catch (...) {
+    return p.string();
+  }
+}
 
 void scan(const fs::path &root) {
   if (!fs::exists(root)) {
@@ -54,15 +65,18 @@ void scan(const fs::path &root) {
         continue;
 
       auto ext = p.path().extension().string();
+      std::string normalized = normalize_path(p.path());
 
       if (ext == ".cpp" || ext == ".c" || ext == ".cc") {
-        sources[p.path().string()] = {
-            p.path(), fs::path("build/obj") /
-                          p.path().filename().replace_extension(".o")}; // TODO: add checks for if p.path has no filename somehow
-        Logger::successLog("found source file: " + p.path().string());
+        sources[normalized] = {p.path(), fs::path("build/obj") / p.path().filename().replace_extension(".o")};
+        Logger::successLog("found source file: " + normalized);
       } else if (ext == ".h") {
-        headers[p.path().string()] = {p.path()};
-        Logger::successLog("found header file: " + p.path().string());
+        HeaderFile hf;
+        hf.path = p.path();
+        hf.hash = hash_file(p.path());
+        headers[normalized] = hf;
+        Logger::successLog("found header file: " + normalized);
+        Logger::debug("hashed header on scan: " + normalized);
       }
     }
   } catch (const fs::filesystem_error &e) {
@@ -74,7 +88,8 @@ void parse_includes(SourceFile &src) {
   if (!fs::exists(src.path)) {
     Logger::failLog("file does not exist: " + src.path.string(), " function: parse_includes() failed.");
   }
-  std::ifstream in(src.path); ENABLE_EXCEPTIONS(in);
+  std::ifstream in(src.path);
+  ENABLE_EXCEPTIONS(in);
   std::string line;
   try {
     while (std::getline(in, line)) {
@@ -106,7 +121,7 @@ uint64_t hash_file(const fs::path &p) {
       hash *= 1099511628211ULL;
     }
   } catch (const std::ios_base::failure &e) {
-    Logger::failLog("hash_file(): failed to read \"" + p.string() + "\"", e.what()); // if something fails it could be HERE
+    Logger::failLog("hash_file(): failed to read \"" + p.string() + "\"", e.what());
   }
   Logger::debug("hashed file: " + p.string());
   Logger::debug("hash: " + std::to_string(hash));
@@ -148,7 +163,7 @@ void save_cache(const fs::path &cachePath) {
       throw std::ios_base::failure("Failed to write all data");
     }
 
-    fs::rename(tempPath, cachePath); // atomic replace
+    fs::rename(tempPath, cachePath);
 
   } catch (const std::ios_base::failure &e) {
     Logger::failLog("save_cache(): failed to write \"" + cachePath.string() + "\"", e.what());
@@ -156,6 +171,10 @@ void save_cache(const fs::path &cachePath) {
   } catch (const fs::filesystem_error &e) {
     Logger::failLog("save_cache(): failed to rename temporary file", e.what());
     cleanTemp(tempPath);
+  }
+
+  for (const auto& inc : headers) {
+      Logger::debug("headers that we have: " + inc.first + " | " + inc.second.path.string() + " | " + std::to_string(inc.second.hash));
   }
 }
 
@@ -203,27 +222,32 @@ void mark_modified(const Config& conf) {
     }
 
     Logger::debug("mark_modified(): source " + src.path.string() + " has include count: " + std::to_string(src.includes.size()));
+
     // at this point we know the source didn't change in any way, we check if the headers did
     for (const fs::path &inc : src.includes) {
-      Logger::debug("mark_modified(): inside for loop");
       auto pathOfInclude = inc.string();
+      Logger::debug("mark_modified(): the size of the headers map is: " + std::to_string(headers.size()));
       auto it = headers.find(pathOfInclude);
-      Logger::debug("mark_modified(): " + it->second.path.string());
+
+      // TODO: we stopped fixing stuff HERE. 
+      // situation: the program considers the headers external for some reason.
+      // if external headers is set to true, it compiles the headers that are directly in the root dir 
+      // if its set to false, it compiles no headers at all.
       if (it == headers.end()) { // if this is an external header that we aren't tracking
         if (!conf.track_external_headers) {
           continue;
         }
-
         HeaderFile hf;
         hf.path = inc;
         hf.hash = hash_file(inc);
         it = headers.emplace(pathOfInclude, std::move(hf)).first;
       }
-
       it->second.hash = hash_file(it->second.path);
       Logger::debug("mark_modified(): " + it->second.path.string() + " has been hashed.");
 
-      if (old_hashes[pathOfInclude] != it->second.hash) { // if the hash that we just computed isn't the same as the one in the cached hashes
+
+        auto oh = old_hashes.find(pathOfInclude);
+        if (oh == old_hashes.end() || oh->second != it->second.hash)  { // if the hash that we just computed isn't the same as the one in the cached hashes
         src.modified = true;
         Logger::debug("mark_modified(): " + src.path.string() + " marked as modified");
         break; // we break once any of the headers triggers recompilation rather
@@ -257,6 +281,7 @@ Options:
 
 
 
+Verbosity Logger::vb = Verbosity::normal;
 int main(int argc, char *argv[]) {
   Config config;
   if (argc == 2) {
