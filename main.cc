@@ -10,18 +10,18 @@
 #define ENABLE_EXCEPTIONS(stream) (stream).exceptions(std::ifstream::badbit)
 namespace fs = std::filesystem;
 #define PRINT_ENABLED_EXCEPTIONS                                   \
-    // {                                                              \
-    //     std::ios_base::iostate exceptions = (in).exceptions();     \
-    //     if (exceptions & std::ifstream::failbit) {                 \
-    //         std::cout << "\nfailbit is enabled";                   \
-    //     }                                                          \
-    //     if (exceptions & std::ifstream::badbit) {                  \
-    //         std::cout << "\nbadbit is enabled";                    \
-    //     }                                                          \
-    //     if (exceptions & std::ifstream::eofbit) {                  \
-    //         std::cout << "eofbit is enabled\n";                    \
-    //     }                                                          \
-    // }
+    {                                                              \
+        std::ios_base::iostate exceptions = (in).exceptions();     \
+        if (exceptions & std::ifstream::failbit) {                 \
+            std::cout << "\nfailbit is enabled";                   \
+        }                                                          \
+        if (exceptions & std::ifstream::badbit) {                  \
+            std::cout << "\nbadbit is enabled";                    \
+        }                                                          \
+        if (exceptions & std::ifstream::eofbit) {                  \
+            std::cout << "\neofbit is enabled";                    \
+        }                                                          \
+    }
 
 
 struct SourceFile {
@@ -145,17 +145,6 @@ std::unordered_map<std::string, uint64_t> old_hashes;
 
 void cleanTemp(const fs::path &tempPath);
 void save_cache(const fs::path &cachePath) {
-  // // Create parent directory if it doesn't exist
-  // fs::path parentDir = cachePath.parent_path();
-  // if (!parentDir.empty() && !fs::exists(parentDir)) {
-  //   try {
-  //     fs::create_directories(parentDir);
-  //   } catch (const fs::filesystem_error &e) {
-  //     Logger::failLog("save_cache(): failed to create directory \"" + readable_path(parentDir) + "\"", e.what());
-  //     return;
-  //   }
-  // }
-  
   fs::path tempPath = cachePath;
   tempPath += ".tmp";
   std::ofstream out(tempPath);
@@ -163,10 +152,10 @@ void save_cache(const fs::path &cachePath) {
 
   try {
     for (auto &[_, s] : sources)
-      out << s.path.string() << " " << s.hash << "\n";
+      out << normalize_path(s.path) << " " << s.hash << "\n";
 
     for (auto &[_, h] : headers)
-      out << h.path.string() << " " << h.hash << "\n";
+      out << normalize_path(h.path) << " " << h.hash << "\n";
 
     out.flush();
     out.close();
@@ -208,7 +197,6 @@ void load_cache(const fs::path &cachePath) {
 
   std::ifstream in(cachePath); 
   ENABLE_EXCEPTIONS(in);
-  PRINT_ENABLED_EXCEPTIONS;
   std::string path;
   uint64_t h;
 
@@ -225,8 +213,8 @@ void mark_modified(const Config& conf) {
   for (auto &[_, src] : sources) {
     src.hash = hash_file(src.path);
 
-    if (!old_hashes.count(src.path.string())          // < if source file doesn't exist in our set of hashed files (it wasn't there last time we built)
-        || old_hashes[src.path.string()] != src.hash // <  or it does exist, but the hash doesn't match the new one (the contents changed)
+    if (!old_hashes.count(normalize_path(src.path))          // < if source file doesn't exist in our set of hashed files (it wasn't there last time we built)
+        || old_hashes[normalize_path(src.path)] != src.hash // <  or it does exist, but the hash doesn't match the new one (the contents changed)
       // NOTE: we are momentarily disabling 
       // obj file check because we don't compile yet
        /*|| !fs::exists(src.object) */) {               // < or it exists, and its hash exists, but its object file doesn't
@@ -239,7 +227,7 @@ void mark_modified(const Config& conf) {
 
     // at this point we know the source didn't change in any way, we check if the headers did
     for (const fs::path &inc : src.includes) {
-      fs::path resolved_include = src.path.parent_path() / inc; // NOTE: insert a debug here to visualize diff
+      fs::path resolved_include = src.path.parent_path() / inc;
       std::string normalized = normalize_path(resolved_include);
       std::string pretty_path = readable_path(resolved_include);
 
@@ -337,3 +325,17 @@ int main(int argc, char *argv[]) {
   std::cout << std::endl;
   return 0;
 }
+
+
+// leverage this to create a cachefile on mkc init command
+  // // Create parent directory if it doesn't exist
+  // fs::path parentDir = cachePath.parent_path();
+  // if (!parentDir.empty() && !fs::exists(parentDir)) {
+  //   try {
+  //     fs::create_directories(parentDir);
+  //   } catch (const fs::filesystem_error &e) {
+  //     Logger::failLog("save_cache(): failed to create directory \"" + readable_path(parentDir) + "\"", e.what());
+  //     return;
+  //   }
+  // }
+
