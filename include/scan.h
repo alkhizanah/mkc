@@ -8,6 +8,22 @@
 
 namespace fs = std::filesystem;
 
+void init_working_dir(const fs::path &root) {
+  if (!fs::exists(root)) {
+    Logger::failLog("directory does not exist: " + root.string(), " function: scan() failed.");
+    std::cout << std::endl;
+    throw "init_directories()";
+  }
+
+  try {
+    fs::create_directories(root / "build");
+    fs::create_directories(root / "build/obj");
+    std::ofstream(root / "build/log.out", std::ios::trunc).close();
+  } catch (...) {
+    Logger::failLog("error initializing root directory \"" + root.string() + "\"");
+  }
+}
+
 uint64_t hash_file(const fs::path &p) {
   if (!fs::exists(p)) {
     Logger::failLog("file does not exist: " + readable_path(p), " function: hash_file() failed.");
@@ -94,7 +110,6 @@ void scan(const fs::path &root) {
 void generate_deps(const std::string &compiler, const std::vector<fs::path> &include_dirs, const SourceFile &src) {
   fs::path dep_file = src.object;
   dep_file.replace_extension(".d");
-  fs::create_directories(dep_file.parent_path()); // TODO: make sure an init function runs that creates all those dirs at first
 
   std::string cmd = compiler;
   cmd += " -MM -MF " + dep_file.string();

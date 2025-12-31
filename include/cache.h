@@ -57,7 +57,7 @@ void save_cache(const fs::path &cachePath) {
 
 void load_cache(const fs::path &cachePath) {
   if (!fs::exists(cachePath) || fs::is_empty(cachePath)) {
-    Logger::warningLog("cache missing or empty, full rebuild required");
+    Logger::debug("cache missing or empty, full rebuild required");
     return;
   }
 

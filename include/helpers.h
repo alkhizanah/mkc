@@ -22,5 +22,4 @@ std::string readable_path(const fs::path& p) {
     return p.string();
   }
 }
-
 #endif

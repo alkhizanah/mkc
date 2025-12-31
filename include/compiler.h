@@ -11,8 +11,6 @@ bool compile_objects(const Config &conf, int &modified) {
     if (!src.modified && !conf.rebuild_all)
       continue;
 
-    fs::create_directories(src.object.parent_path()); // TODO: extract into init func
-
     std::string cmd = conf.compiler;
     cmd += " -c " + src.path.string();
     cmd += " -o " + src.object.string();

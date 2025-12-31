@@ -3,6 +3,8 @@
 #include "../include/compiler.h"
 #include "../include/cli.h"
 
+#define CACHE_PATH "build/.cache"
+#define LOG_PATH "build/log.out"
 
 int main(int argc, char *argv[]) {
   Config config;
@@ -22,7 +24,7 @@ int main(int argc, char *argv[]) {
 
   Logger::setVerbosity(config.log_verbosity);
 
-  // TODO: load config file if specified
+  // TODO: load config file
   if (!config.config_file.empty()) {
     // load and merge config from file
   }
@@ -32,12 +34,8 @@ int main(int argc, char *argv[]) {
     // rebuild on changes to watch_files
   }
 
-  // TODO: extract this into the init function.
-  fs::create_directories("build");
-  std::ofstream("build/log.out", std::ios::trunc).close();
-  /////////////////////////////////////////
-
   try {
+    init_working_dir(config.root_dir);
     scan(config.root_dir);
   } catch (const char *msg) {
     Logger::debug("failed at stage: " + std::string(msg));
@@ -45,14 +43,14 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  load_cache("build/.cache");
+  load_cache(CACHE_PATH);
 
   for (auto &[_, src] : sources) {
     try {
       generate_deps(config.compiler, config.include_dirs, src);
       load_compiler_deps(src);
     } catch (const char *msg) {
-      Logger::printLogfile("build/log.out");
+      Logger::printLogfile(LOG_PATH);
       Logger::debug("failed at stage: " + std::string(msg));
       std::cout << std::endl;
       return 1;
@@ -64,28 +62,15 @@ int main(int argc, char *argv[]) {
   try {
     compile_and_link(config);
   } catch (const char *msg) {
-    Logger::printLogfile("build/log.out");
+    Logger::printLogfile(LOG_PATH);
     Logger::debug("failed at stage: " + std::string(msg));
     std::cout << std::endl;
     return 1;
   }
 
-  save_cache("build/.cache");
+  save_cache(CACHE_PATH);
 
   std::cout << std::endl;
   return 0;
 }
-
-
-// TODO: create a cachefile on mkc init command
-  // // Create parent directory if it doesn't exist
-  // fs::path parentDir = cachePath.parent_path();
-  // if (!parentDir.empty() && !fs::exists(parentDir)) {
-  //   try {
-  //     fs::create_directories(parentDir);
-  //   } catch (const fs::filesystem_error &e) {
-  //     Logger::failLog("save_cache(): failed to create directory \"" + readable_path(parentDir) + "\"", e.what());
-  //     return;
-  //   }
-  // }
 
