@@ -10,11 +10,11 @@ namespace fs = std::filesystem;
 
 void init_working_dir(const fs::path &root) {
   if (!fs::exists(root)) {
-    Logger::failLog("directory does not exist: " + root.string(), " function: scan() failed.");
+    Logger::failLog("directory does not exist: " + root.string(), " function: init_working_dir() failed.");
     std::cout << std::endl;
-    throw "init_directories()";
+    throw "init_working_dir()";
   }
-
+  
   try {
     fs::create_directories(root / "build");
     fs::create_directories(root / "build/obj");
@@ -107,18 +107,18 @@ void scan(const fs::path &root) {
 // }
 
 
-void generate_deps(const std::string &compiler, const std::vector<fs::path> &include_dirs, const SourceFile &src) {
+void generate_deps(const std::string& log_path, const Config& conf, const SourceFile &src) {
   fs::path dep_file = src.object;
   dep_file.replace_extension(".d");
 
-  std::string cmd = compiler;
+  std::string cmd = conf.compiler;
   cmd += " -MM -MF " + dep_file.string();
   cmd += " -MT " + src.object.string();
   cmd += " " + src.path.string();
-  for (const auto &inc : include_dirs) {
+  for (const auto &inc : conf.include_dirs) {
     cmd += " -I" + inc.string();
   }
-  cmd += " >> build/log.out 2>&1";
+  cmd += " >> " + log_path + " 2>&1";
 
   int ret = std::system(cmd.c_str());
   if (ret != 0) {

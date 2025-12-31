@@ -3,8 +3,8 @@
 #include "../include/compiler.h"
 #include "../include/cli.h"
 
-#define CACHE_PATH "build/.cache"
-#define LOG_PATH "build/log.out"
+#define CACHE_PATH config.root_dir + "/build/.cache"
+#define LOG_PATH config.root_dir + "/build/log.out"
 
 int main(int argc, char *argv[]) {
   Config config;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
   for (auto &[_, src] : sources) {
     try {
-      generate_deps(config.compiler, config.include_dirs, src);
+      generate_deps(LOG_PATH, config, src);
       load_compiler_deps(src);
     } catch (const char *msg) {
       Logger::printLogfile(LOG_PATH);
