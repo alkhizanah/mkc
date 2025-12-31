@@ -1,6 +1,7 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "config.h"
 
@@ -51,7 +52,29 @@ public:
   static void warningLog(const std::string &message) {
     std::cout << "\n[" << YELLOW << "LOG" << RESET << "] " << message;
   }
+
+  static void printLogfile(const std::string& logfile_path) {
+    if (!fs::exists(logfile_path)) {
+      Logger::failLog("Log file does not exist at: " + logfile_path);
+        return;
+    }
+
+    std::ifstream file(logfile_path);
+    if (!file) {
+      Logger::failLog("Error opening file at: " + logfile_path);
+        return;
+    }
+
+    std::string line;
+    std::cout << std::endl;
+    while (std::getline(file, line)) {
+        std::cout << line << std::endl;
+    }
+
+    file.close();
+  }
 };
 
+Verbosity Logger::vb = Verbosity::normal;
 
 #endif
