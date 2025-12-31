@@ -35,8 +35,8 @@ uint64_t hash_file(const fs::path &p) {
 void scan(const fs::path &root) {
   if (!fs::exists(root)) {
     Logger::failLog("directory does not exist: " + root.string(), " function: scan() failed.");
-    std::cout << std:: endl;
-    exit(EXIT_FAILURE);
+    std::cout << std::endl;
+    throw "scan()";
   }
 
   try {
@@ -90,15 +90,16 @@ void scan(const fs::path &root) {
 //   }
 // }
 
+
 void generate_deps(const std::string &compiler, const std::vector<fs::path> &include_dirs, const SourceFile &src) {
   fs::path dep_file = src.object;
   dep_file.replace_extension(".d");
   fs::create_directories(dep_file.parent_path()); // TODO: make sure an init function runs that creates all those dirs at first
 
   std::string cmd = compiler;
-  cmd += " -MMD -MF " + dep_file.string();
+  cmd += " -MM -MF " + dep_file.string();
   cmd += " -MT " + src.object.string();
-  cmd += " -c " + src.path.string();
+  cmd += " " + src.path.string();
   for (const auto &inc : include_dirs) {
     cmd += " -I" + inc.string();
   }
@@ -106,13 +107,14 @@ void generate_deps(const std::string &compiler, const std::vector<fs::path> &inc
 
   int ret = std::system(cmd.c_str());
   if (ret != 0) {
-    Logger::failLog("dependency generation failed.", ("dependency generation command was:\n            " + cmd).c_str());
+    Logger::failLog("\"#Include\" dependency generation failed.", ("dependency generation command was:\n            " + cmd).c_str());
     std::cout << std::endl;
-    Logger::printLogfile("build/log.out");
-    std::exit(EXIT_FAILURE);
+    throw "generate_deps()";
   }
 }
 
+
+// TODO: we enable exceptions here but we aren't catching them
 std::vector<fs::path> parse_dep_file(const fs::path &dep_path) {
   std::ifstream in(dep_path);
   ENABLE_EXCEPTIONS(in);

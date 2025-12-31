@@ -37,10 +37,11 @@ bool compile_objects(const Config &conf, int &modified) {
 bool link_executable(const Config &conf) {
   std::string cmd = conf.compiler;
 
-  for (const auto &[_, src] : sources)
+  for (const auto &[_, src] : sources) {
     cmd += " " + src.object.string();
+  }
 
-  cmd += " -o build/app";
+  cmd += " -o build/" + conf.executable_name;
   cmd += " >> build/log.out 2>&1";
 
   return std::system(cmd.c_str()) == 0;
@@ -48,25 +49,23 @@ bool link_executable(const Config &conf) {
 
 
 
-int compile(const Config &conf) {
+void compile_and_link(const Config &conf) {
   int modif_count = 0;
   if (!compile_objects(conf, modif_count)) {
     Logger::failLog("compilation failed.", "see build/log.out");
-    return 1;
+    throw "compile_objects()";
   }
 
   if (modif_count == 1) {
-    Logger::successLog("recompiled " + std::to_string(modif_count) + " file.");
+    Logger::successLog("recompiled: " + std::to_string(modif_count) + " file.");
   } else {
-    Logger::successLog("recompiled " + std::to_string(modif_count) + " files.");
+    Logger::successLog("recompiled: " + std::to_string(modif_count) + " files.");
   }
 
   if (!link_executable(conf)) {
     Logger::failLog("linking failed.", "see build/log.out");
-    return 1;
+    throw "link_executable()";
   }
-
-  return 0;
 }
 
 
