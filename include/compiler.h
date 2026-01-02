@@ -22,6 +22,8 @@ bool compile_objects(const Config &conf, int &modified) {
     for (const auto &inc : conf.include_dirs)
       cmd += " -I" + inc.string();
 
+    for (const auto &flag : conf.compile_flags)
+      cmd += " " + flag;
     // TODO: as a matter of design choice here.. taking the compiler output
     // into the log file then back out of the log file 
     // takes away the colors of the compiler output, which isn't 
@@ -32,6 +34,7 @@ bool compile_objects(const Config &conf, int &modified) {
       return false;
 
     Logger::successLog("compiled: " + readable_path(src.path));
+    Logger::infoLog("compile command was: " + cmd);
     modified++;
   }
   return true;
@@ -42,18 +45,19 @@ bool compile_objects(const Config &conf, int &modified) {
 // TODO: what if we compile but linking fails for some reason? gotta manage that.
 bool link_executable(const Config &conf) {
   std::string cmd = conf.compiler;
-  // // note: remove later
-  // cmd += " -shared";
+  if (conf.make_shared)  cmd += " -shared";
   for (const auto &[_, src] : sources) {
     cmd += " " + src.object.string();
   }
   
-
+  for (const auto &flag : conf.link_flags)
+    cmd += " " + flag;
   // // note: remove later
   // cmd +=  " -Wl,--unresolved-symbols=ignore-all";
   // // ////
   cmd += " -o build/" + conf.executable_name;
   cmd += " >> build/log.out 2>&1";
+  Logger::infoLog("linking command was: " + cmd);
 
   return std::system(cmd.c_str()) == 0;
 }

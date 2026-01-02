@@ -23,6 +23,7 @@ struct Config {
   bool show_help = false;
   bool watch_mode = false;
   bool run_mode = false;
+  bool make_shared = false;
   bool      log_immediately = false;
   Verbosity log_verbosity   = Verbosity::normal;
   BuildMode build_mode = BuildMode::release;
