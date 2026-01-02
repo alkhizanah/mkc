@@ -1,8 +1,7 @@
 #ifndef CLI_H_
 #define CLI_H_
-#include "containers.h"
-#include "helpers.h"
-#include "logger.h"
+#include <iostream> 
+#include "config.h"
 
 
 void printHelp() {
@@ -11,7 +10,8 @@ Usage: mkc [options]
 
 Config:
   --config <file>         Load configuration from file
-  --watch <file>          Watch file(s) for changes and rebuild
+  --watch                 Watch project directory for changes and rebuild.
+  --run                   Run the executable after compilation
   -r, --root <dir>        Set project root directory (default: .)
   --track-external        Track external header dependencies
 
@@ -33,15 +33,17 @@ Compiler Options:
 
 Log Options:
   -h, --help              Show this help message
+  -s, --silent            Suppress all non-error output
   -v, --verbose           Enable verbose logging
   -d, --debug-log         Enable debug logging (highest verbosity)
-  -s, --silent            Suppress all non-error output
+  --immediate             Force flushing all logs
+
 
 Examples:
   mkc                           # Normal build
   mkc --clean --debug           # Clean debug build
   mkc -j4 -O3                   # Parallel release build with -O3
-  mkc --watch src/main.cpp      # Watch and rebuild on changes
+  mkc --watch --run             # Watch, rebuild and run on changes
   mkc -o myapp -I./external     # Custom output name and includes
 )";
 }
@@ -52,12 +54,10 @@ Config parse_cli_args(int argc, char *argv[]) {
   for (int i = 1; i < argc; i++) {
     std::string arg = argv[i];
 
-
     if (arg == "-h" || arg == "--help") {
       config.show_help = true;
       return config;
     }
-
 
     else if (arg == "-v" || arg == "--verbose") {
       config.log_verbosity = Verbosity::verbose;
@@ -66,7 +66,6 @@ Config parse_cli_args(int argc, char *argv[]) {
     } else if (arg == "-s" || arg == "--silent") {
       config.log_verbosity = Verbosity::silent;
     }
-
 
     else if (arg == "-c" || arg == "--clean") {
       config.rebuild_all = true;
@@ -89,7 +88,6 @@ Config parse_cli_args(int argc, char *argv[]) {
         throw std::runtime_error("--jobs requires an argument");
       }
     }
-
 
     else if (arg == "--compiler") {
       if (i + 1 < argc) {
@@ -135,7 +133,6 @@ Config parse_cli_args(int argc, char *argv[]) {
       }
     }
 
-
     else if (arg == "--config") {
       if (i + 1 < argc) {
         config.config_file = argv[++i];
@@ -147,12 +144,10 @@ Config parse_cli_args(int argc, char *argv[]) {
       config.track_external_headers = true;
     } else if (arg == "--watch") {
       config.watch_mode = true;
-      if (i + 1 < argc && argv[i + 1][0] != '-') {
-        config.watch_files.push_back(argv[++i]);
-        // TODO: file watching with inotify/kqueue
-      } else {
-        throw std::runtime_error("--watch requires at least one file argument");
-      }
+    } else if (arg == "--run") {
+      config.run_mode = true;
+    } else if (arg == "--immediate") {
+      config.log_immediately = true;
     } else if (arg == "-r" || arg == "--root") {
       if (i + 1 < argc) {
         config.root_dir = argv[++i];
@@ -160,7 +155,6 @@ Config parse_cli_args(int argc, char *argv[]) {
         throw std::runtime_error("--root requires an argument");
       }
     }
-
 
     else {
       throw std::runtime_error("Unknown option: " + arg);

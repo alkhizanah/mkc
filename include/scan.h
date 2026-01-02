@@ -8,6 +8,9 @@
 
 namespace fs = std::filesystem;
 
+
+
+// TODO: make this check before creating the dirs so we don't waste time
 void init_working_dir(const fs::path &root) {
   if (!fs::exists(root)) {
     Logger::failLog("directory does not exist: " + root.string(), " function: init_working_dir() failed.");
@@ -115,6 +118,7 @@ void generate_deps(const std::string& log_path, const Config& conf, const Source
   cmd += " -MM -MF " + dep_file.string();
   cmd += " -MT " + src.object.string();
   cmd += " " + src.path.string();
+
   for (const auto &inc : conf.include_dirs) {
     cmd += " -I" + inc.string();
   }

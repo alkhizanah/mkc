@@ -22,7 +22,9 @@ struct Config {
   bool track_external_headers = false;
   bool show_help = false;
   bool watch_mode = false;
-  Verbosity log_verbosity = Verbosity::normal;
+  bool run_mode = false;
+  bool      log_immediately = false;
+  Verbosity log_verbosity   = Verbosity::normal;
   BuildMode build_mode = BuildMode::release;
   std::string executable_name = "app";
   std::string root_dir = ".";
@@ -30,10 +32,24 @@ struct Config {
   std::string config_file = "";
   int parallel_jobs = 1;
   std::vector<fs::path> include_dirs = {
-    fs::path("include"), 
-  };
+    // fs::path("/usr/include/libdrm"),
+    // fs::path("/usr/local/include/hyprland/protocols"),
+    // fs::path("/usr/local/include/hyprland"),
+    // fs::path("/usr/include/pango-1.0"),
+    // fs::path("/usr/include/cairo"),
+    // fs::path("/usr/include/pixman-1"),
+    // fs::path("/usr/include/libmount"),
+    // fs::path("/usr/include/blkid"),
+    // fs::path("/usr/include/fribidi"),
+    // fs::path("/usr/include/libxml2"),
+    // fs::path("/usr/include/harfbuzz"),
+    // fs::path("/usr/include/freetype2"),
+    // fs::path("/usr/include/libpng16"),
+    // fs::path("/usr/include/glib-2.0"),
+    // fs::path("/usr/lib64/glib-2.0/include"),
+    // fs::path("/usr/include/sysprof-6"),
+};
   std::vector<std::string> compile_flags;
   std::vector<std::string> link_flags;
-  std::vector<fs::path> watch_files;
 };
 #endif

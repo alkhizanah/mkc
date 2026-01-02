@@ -14,10 +14,18 @@ bool compile_objects(const Config &conf, int &modified) {
     std::string cmd = conf.compiler;
     cmd += " -c " + src.path.string();
     cmd += " -o " + src.object.string();
-
+    // // note: remove this later
+    // cmd += " -std=c++23";
+    // cmd += " -D WITH_GZFILEOP";
+    // cmd += " -fPIC";
+    // //////////////////
     for (const auto &inc : conf.include_dirs)
       cmd += " -I" + inc.string();
 
+    // TODO: as a matter of design choice here.. taking the compiler output
+    // into the log file then back out of the log file 
+    // takes away the colors of the compiler output, which isn't 
+    // particularly nice.
     cmd += " >> build/log.out 2>&1";
 
     if (std::system(cmd.c_str()) != 0)
@@ -34,11 +42,16 @@ bool compile_objects(const Config &conf, int &modified) {
 // TODO: what if we compile but linking fails for some reason? gotta manage that.
 bool link_executable(const Config &conf) {
   std::string cmd = conf.compiler;
-
+  // // note: remove later
+  // cmd += " -shared";
   for (const auto &[_, src] : sources) {
     cmd += " " + src.object.string();
   }
+  
 
+  // // note: remove later
+  // cmd +=  " -Wl,--unresolved-symbols=ignore-all";
+  // // ////
   cmd += " -o build/" + conf.executable_name;
   cmd += " >> build/log.out 2>&1";
 
@@ -47,7 +60,7 @@ bool link_executable(const Config &conf) {
 
 
 
-void compile_and_link(const Config &conf) {
+int compile_and_link(const Config &conf) {
   int modif_count = 0;
   if (!compile_objects(conf, modif_count)) {
     Logger::failLog("compilation failed.", "see build/log.out");
@@ -64,6 +77,8 @@ void compile_and_link(const Config &conf) {
     Logger::failLog("linking failed.", "see build/log.out");
     throw "link_executable()";
   }
+
+  return modif_count;
 }
 
 
