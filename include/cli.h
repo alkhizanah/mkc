@@ -26,6 +26,7 @@ Compiler Options:
   -f <flag>               Add compiler flag
   -l <lib>                Link library
   -L <dir>                Add library search path
+  --unity <name>          Sets unity build to true, auto-generates translation unit
   --link-flags            Add arbitrary flags for the linker
   --shared                Use when creating a shared object.
 
@@ -141,6 +142,15 @@ Config parse_cli_args(int argc, char *argv[]) {
         config.exclude_exts.push_back(std::string(argv[++i]));
       } else {
         throw std::runtime_error("--exclude-fmt requires an argument");
+      }
+    } else if (arg == "--unity") {
+      if (i + 1 < argc) {
+        config.unity_b = true;
+        config.unity_src_name = fs::path("build") / argv[++i];
+        config.unity_obj = fs::path("build/obj") / config.unity_src_name.filename().replace_extension(".o");
+        config.exclude_dirs.push_back(fs::path("build"));
+      } else {
+        throw std::runtime_error("--unity-t requires an argument");
       }
     } else if (arg == "-L") {
       if (i + 1 < argc) {

@@ -39,18 +39,18 @@ public:
 
   static void infoLog(const std::string &message) {
     if (vb != Verbosity::verbose && vb != Verbosity::debug) return;
-    std::cout << "\n[" << CYAN << "INFO" << RESET << "] " << message;
+    std::cout << "\n[" << CYAN << "INFO" << RESET << "]  " << message;
     f_flush(force_f);
   }
 
   static void successLog(const std::string &message) {
     if (vb == Verbosity::silent) return;
-    std::cout << "\n[" << GREEN << "LOG" << RESET << "] " << message;
+    std::cout << "\n[" << GREEN << "LOG" << RESET << "]   " << message;
     f_flush(force_f);
   }
 
   static void failLog(const std::string &message, const char *exception = nullptr) {
-    std::cout << "\n[" << RED << "LOG" << RESET << "] " << message;
+    std::cout << "\n[" << RED << "LOG" << RESET << "]   " << message;
     if (vb == Verbosity::verbose) {
       std::cout << "\n[" << RED << "EXCEPTION" << RESET << "] ";
       std::cout << (exception ? exception : "unknown exception.") << std::endl;
@@ -60,7 +60,7 @@ public:
 
   static void warningLog(const std::string &message) {
     if (vb == Verbosity::silent) return;
-    std::cout << "\n[" << YELLOW << "LOG" << RESET << "] " << message;
+    std::cout << "\n[" << YELLOW << "LOG" << RESET << "]   " << message;
     f_flush(force_f);
   }
 

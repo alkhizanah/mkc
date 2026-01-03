@@ -193,15 +193,14 @@ void mark_modified(const Config &conf) {
   for (auto &[_, src] : sources) {
     src.hash = hash_file(src.path);
 
+    bool hash_changed = old_hashes[normalize_path(src.path)] != src.hash;
+    if (hash_changed) Logger::warningLog("file modified: " + readable_path(src.path));
     if (!old_hashes.count(normalize_path(src.path))          // < if source file doesn't exist in our set of hashed files (it wasn't there last time we built)
-        || old_hashes[normalize_path(src.path)] != src.hash // <  or it does exist, but the hash doesn't match the new one (the contents changed)
+        || hash_changed // <  or it does exist, but the hash doesn't match the new one (the contents changed)
         || !fs::exists(src.object)) {               // < or it exists, and its hash exists, but its object file doesn't
-      src.modified = true;                            // < then mark it as modified and move on to the next file
-      Logger::debug("marked as modified: " + readable_path(src.path));
+      src.modified = true;                            // < then mark it as modified
       continue;
     }
-
-    // Logger::debug("checking source: " + readable_path(src.path) + " (includes: " +  std::to_string(src.includes.size()) + ")");
 
     // at this point we know the source didn't change in any way, we check if the headers did
     for (const fs::path &inc : src.includes) {
@@ -235,7 +234,7 @@ void mark_modified(const Config &conf) {
           || oh->second != it->second.hash) { // if it is in the old hashes but
                                               // it has been modified.
         src.modified = true;
-        Logger::debug("marked as modified due to: " + readable_path(it->second.path));
+        Logger::warningLog("file modified: " + readable_path(it->second.path));
         break;
       }
     }

@@ -16,6 +16,14 @@ std::string normalize_path(const fs::path& p) {
   }
 }
 
+fs::path normalize_fs_path(const fs::path& p) {
+  try {
+    return fs::weakly_canonical(p);
+  } catch (...) {
+    return p;
+  }
+}
+
 // relative instead of absolute for readability in the logs
 std::string readable_path(const fs::path& p) {
   try {
