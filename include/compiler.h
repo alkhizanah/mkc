@@ -14,11 +14,7 @@ bool compile_objects(const Config &conf, int &modified) {
     std::string cmd = conf.compiler;
     cmd += " -c " + src.path.string();
     cmd += " -o " + src.object.string();
-    // // note: remove this later
-    // cmd += " -std=c++23";
-    // cmd += " -D WITH_GZFILEOP";
-    // cmd += " -fPIC";
-    // //////////////////
+
     for (const auto &inc : conf.include_dirs)
       cmd += " -I" + inc.string();
 
@@ -49,12 +45,9 @@ bool link_executable(const Config &conf) {
   for (const auto &[_, src] : sources) {
     cmd += " " + src.object.string();
   }
-  
-  for (const auto &flag : conf.link_flags)
-    cmd += " " + flag;
-  // // note: remove later
-  // cmd +=  " -Wl,--unresolved-symbols=ignore-all";
-  // // ////
+
+  for (const auto &flag : conf.link_flags) { cmd += " " + flag; }
+
   cmd += " -o build/" + conf.executable_name;
   cmd += " >> build/log.out 2>&1";
   Logger::infoLog("linking command was: " + cmd);
@@ -84,6 +77,18 @@ int compile_and_link(const Config &conf) {
 
   return modif_count;
 }
+
+
+// compile flags for hyprland plugin
+    // // note: remove this later
+    // cmd += " -std=c++23";
+    // cmd += " -D WITH_GZFILEOP";
+    // cmd += " -fPIC";
+    // //////////////////
+// link flags for hyprland plugin 
+  // // note: remove later
+  // cmd +=  " -Wl,--unresolved-symbols=ignore-all";
+  // // ////
 
 
 #endif

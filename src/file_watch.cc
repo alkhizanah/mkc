@@ -1,7 +1,6 @@
 #include "../include/file_watch.h"
 #ifdef __linux__
 #include <filesystem>
-#include <vector>
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <chrono>

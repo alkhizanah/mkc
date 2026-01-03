@@ -18,20 +18,23 @@ enum class BuildMode {
 };
 
 struct Config {
-  bool rebuild_all = false;
-  bool track_external_headers = false;
-  bool show_help = false;
-  bool watch_mode = false;
-  bool run_mode = false;
-  bool make_shared = false;
-  bool      log_immediately = false;
-  Verbosity log_verbosity   = Verbosity::normal;
-  BuildMode build_mode = BuildMode::release;
-  std::string executable_name = "app";
-  std::string root_dir = ".";
-  std::string compiler = "g++";
-  std::string config_file = "";
   int parallel_jobs = 1;
+  bool rebuild_all            = false;
+  bool track_external_headers = false;
+  bool show_help              = false;
+  bool watch_mode             = false;
+  bool run_mode               = false;
+  bool make_shared            = false;
+  bool      log_immediately   = false;
+  Verbosity log_verbosity     = Verbosity::normal;
+  BuildMode build_mode        = BuildMode::release;
+  std::string executable_name = "app";
+  std::string compiler        = "g++";
+  std::string root_dir        = ".";
+  std::string config_file     = "";
+  std::vector<fs::path>    exclude_dirs;
+  // default tracked extension: .cpp, .c, .cc, .h, .hpp;
+  std::vector<std::string> exclude_exts;
   std::vector<fs::path> include_dirs = {
     // fs::path("/usr/include/libdrm"),
     // fs::path("/usr/local/include/hyprland/protocols"),
@@ -49,7 +52,7 @@ struct Config {
     // fs::path("/usr/include/glib-2.0"),
     // fs::path("/usr/lib64/glib-2.0/include"),
     // fs::path("/usr/include/sysprof-6"),
-};
+  };
   std::vector<std::string> compile_flags;
   std::vector<std::string> link_flags;
 };

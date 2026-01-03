@@ -13,7 +13,7 @@ void build_procedure(const Config& config) {
   int modifications = 0;
   try {
     init_working_dir(config.root_dir);
-    scan(config.root_dir);
+    scan(config);
   } catch (const char *msg) {
     Logger::debug("failed at stage: " + std::string(msg));
     throw;

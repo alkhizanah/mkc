@@ -12,6 +12,8 @@ Config:
   --config <file>         Load configuration from file
   --watch                 Watch project directory for changes and rebuild.
   --run                   Run the executable after compilation
+  --exclude <file>        Exclude directory or specific file
+  --exclude-fmt           Exclude a file extension (eg: .c)
   -r, --root <dir>        Set project root directory (default: .)
   -o, --output <name>     Specify output executable name
   --track-external        Track external header dependencies
@@ -127,6 +129,18 @@ Config parse_cli_args(int argc, char *argv[]) {
         config.link_flags.push_back(std::string(argv[++i]));
       } else {
         throw std::runtime_error("--link-flags requires an argument");
+      }
+    } else if (arg == "--exclude") {
+      if (i + 1 < argc) {
+        config.exclude_dirs.push_back(std::string(argv[++i]));
+      } else {
+        throw std::runtime_error("--exclude requires an argument");
+      }
+    } else if (arg == "--exclude-fmt") {
+      if (i + 1 < argc) {
+        config.exclude_exts.push_back(std::string(argv[++i]));
+      } else {
+        throw std::runtime_error("--exclude-fmt requires an argument");
       }
     } else if (arg == "-L") {
       if (i + 1 < argc) {

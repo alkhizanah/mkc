@@ -2,6 +2,7 @@
 #define SCAN_H_
 #include "logger.h"
 #include <filesystem> 
+#include <algorithm>
 #include "helpers.h"
 #include "exceptions.h"
 #include "containers.h"
@@ -51,40 +52,48 @@ uint64_t hash_file(const fs::path &p) {
 }
 
 
-void scan(const fs::path &root) {
+void scan(const Config &conf) {
+  fs::path root = fs::path(conf.root_dir);
   if (!fs::exists(root)) {
-    Logger::failLog("directory does not exist: " + root.string(), " function: scan() failed.");
-    std::cout << std::endl;
+    Logger::failLog("directory does not exist: " + root.string(), "function: scan()");
     throw "scan()";
   }
 
   try {
-    fs::recursive_directory_iterator iter(root);
-    for (auto &p : iter) {
+    for (auto &p : fs::recursive_directory_iterator(root)) {
       if (!p.is_regular_file())
         continue;
-
-      auto ext = p.path().extension().string();
-      std::string normalized = normalize_path(p.path());
-      std::string pretty_path = readable_path(p.path());
+      fs::path path = p.path();
+      std::string ext = path.extension().string();
+      std::string normalized = normalize_path(path);
+      std::string pretty_path = readable_path(path);
+     
+      // NOTE: obviously this exclusion is a performance hit.
+      // it would be better not to use this, but I made the 
+      // option anyway, for special cases.
+      // filtering excluded extensions
+      if (is_excluded(conf, path, ext)) continue;
 
       if (ext == ".cpp" || ext == ".c" || ext == ".cc") {
         sources[normalized] = {p.path(), fs::path("build/obj") / p.path().filename().replace_extension(".o")};
         Logger::infoLog("found source file: " + pretty_path);
-      } else if (ext == ".h") {
+      } else if (ext == ".h" || ext == ".hpp") {
         HeaderFile hf;
         hf.path = p.path();
         hf.hash = hash_file(p.path());
         headers[normalized] = hf;
         Logger::infoLog("found header file: " + pretty_path);
-        Logger::debug("hashed header on scan: " + pretty_path + " with hash: " + std::to_string(hf.hash));
+        Logger::debug("hashed header on scan: " + pretty_path +
+                      " with hash: " + std::to_string(hf.hash));
       }
     }
   } catch (const fs::filesystem_error &e) {
-    Logger::failLog("error iterating over \"" + root.string() + "\" directory, please check for permission denial, symlink loops, etc.", e.what());
+    Logger::failLog("error iterating over \""
+                    + root.string()
+                    + "\" directory, please check for permission denial, symlink loops, etc.",
+                    e.what());
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////
 
