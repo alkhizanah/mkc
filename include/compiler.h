@@ -19,8 +19,7 @@ bool compile_objects(const Config &conf, int &modified) {
     for (const auto &inc : conf.include_dirs)
       cmd += " -I" + inc.string();
 
-    for (const auto &flag : conf.compile_flags)
-      cmd += " " + flag;
+    for (const auto &flag : conf.compile_flags) cmd += " " + flag;
     // TODO: as a matter of design choice here.. taking the compiler output
     // into the log file then back out of the log file 
     // takes away the colors of the compiler output, which isn't 
@@ -51,7 +50,11 @@ bool link_executable(const Config &conf) {
   }
 
   for (const auto &flag : conf.link_flags) { cmd += " " + flag; }
-  cmd += " -o build/" + conf.executable_name;
+  if (conf.make_shared) {
+    cmd += " -o build/lib" + conf.executable_name + ".so";
+  } else {
+    cmd += " -o build/" + conf.executable_name;
+  }
   std::string cmd_no_log = cmd;
   cmd += " >> build/log.out 2>&1";
   Logger::infoLog("linking command was: " + cmd_no_log);

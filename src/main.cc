@@ -1,5 +1,6 @@
 #include "../include/build_procedure.h"
 #include "../include/file_watch.h"
+#include "../include/pkg_config.h"
 #include "../include/parse_config.h"
 #include "../include/cli.h"
 
@@ -13,7 +14,13 @@ int main(int argc, char *argv[]) {
     std::cerr << "Error: " << e.what() << "\n";
     printHelp();
     return 1;
+  } catch (const int& x) {
+    // NOTE: here we just init the working dir and leave
+    build_procedure(config, true);
+    generate_example_config(config.config_file);
+    return 1;
   }
+
   if (config.show_help) {
     printHelp();
     return 0;
@@ -23,7 +30,10 @@ int main(int argc, char *argv[]) {
     try {
       load_toml_config(config.config_file, config);
     } catch (const std::exception &e) {
-      std::cerr << "Config file error: " << e.what() << "\n";
+      Logger::failLog("No config: proceeding with defaults.", e.what());
+    } catch (...) {
+      std::cout << std::endl;
+      return 1;
     }
   };
 
@@ -35,12 +45,12 @@ int main(int argc, char *argv[]) {
   if (config.unity_b) config.exclude_dirs.push_back(fs::weakly_canonical("build"));
   
 
-
   if (config.watch_mode) {
     Logger::warningLog("Watching for changes on root directory: \"" + config.root_dir + "\"");
     while (true) {
       if (file_watcher(config)) {
         try {
+          resolve_pkg_config(config);
           build_procedure(config);
         } catch (...) {
           std::cout << std::endl;
@@ -51,6 +61,7 @@ int main(int argc, char *argv[]) {
   }
 
   try {
+    resolve_pkg_config(config);
     build_procedure(config);
   } catch (...) {
     std::cout << std::endl;

@@ -51,7 +51,7 @@ public:
 
   static void failLog(const std::string &message, const char *exception = nullptr) {
     std::cout << "\n[" << RED << "LOG" << RESET << "]   " << message;
-    if (vb == Verbosity::verbose) {
+    if (vb == Verbosity::verbose || vb == Verbosity::debug) {
       std::cout << "\n[" << RED << "EXCEPTION" << RESET << "] ";
       std::cout << (exception ? exception : "unknown exception.") << std::endl;
     }

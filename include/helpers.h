@@ -40,6 +40,7 @@ bool is_under(const fs::path &p, const fs::path &dir) {
 }
 
 // TODO: apply watcher exclusion as well
+// TODO: NORMALIZE PATHS BEFORE CHECKING
 bool is_excluded(const Config &conf, const fs::path &path, const std::string &ext) {
   if (conf.exclude_dirs.size() != 0) {
     bool excluded = false;

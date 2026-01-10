@@ -1,6 +1,7 @@
 #ifndef CLI_H_
 #define CLI_H_
 #include <iostream> 
+#include "parse_config.h"
 #include "config.h"
 
 
@@ -9,6 +10,7 @@ void printHelp() {
 Usage: mkc [options]
 
 Config:
+  init                    Create example config and initialize current directory
   --config <file>         Load configuration from file
   --watch                 Watch project directory for changes and rebuild.
   --run                   Run the executable after compilation
@@ -26,7 +28,7 @@ Compiler Options:
   -f <flag>               Add compiler flag
   -l <lib>                Link library
   -L <dir>                Add library search path
-  --unity <name>          Sets unity build to true, auto-generates translation unit
+  --unity <name>          Set unity build to true, auto-generate translation unit
   --link-flags            Add arbitrary flags for the linker
   --shared                Use when creating a shared object.
 
@@ -55,6 +57,10 @@ Config parse_cli_args(int argc, char *argv[]) {
     if (arg == "-h" || arg == "--help") {
       config.show_help = true;
       return config;
+    }
+
+    if (arg == "init") {
+      throw 1;
     }
 
     else if (arg == "-v" || arg == "--verbose") {

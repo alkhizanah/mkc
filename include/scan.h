@@ -16,7 +16,7 @@ void init_working_dir(const fs::path &root) {
   if (!fs::exists(root)) {
     Logger::failLog("directory does not exist: " + root.string(), " function: init_working_dir() failed.");
     std::cout << std::endl;
-    throw "init_working_dir()";
+    throw std::runtime_error("init_working_dir()");
   }
   
   try {
@@ -52,11 +52,40 @@ uint64_t hash_file(const fs::path &p) {
 }
 
 
+
+void scan_explicit_sources(const Config &conf) {
+  for (const auto &rel : conf.explicit_sources) {
+    fs::path abs = fs::path(conf.root_dir) / rel;
+    if (!fs::exists(abs) || !fs::is_regular_file(abs)) {
+      Logger::failLog("explicit source not found: " + abs.string());
+      throw std::runtime_error("scan_explicit_sources()");
+    }
+
+    std::string ext = abs.extension().string();
+    if (ext != ".c" && ext != ".cpp" && ext != ".cc") continue;
+
+    std::string normalized = normalize_path(abs);
+    sources[normalized] = {abs, fs::path("build/obj") / abs.filename().replace_extension(".o")};
+    Logger::infoLog("found explicit source: " + readable_path(abs));
+  }
+}
+
+
+
 void scan(const Config &conf) {
   fs::path root = fs::path(conf.root_dir);
   if (!fs::exists(root)) {
     Logger::failLog("directory does not exist: " + root.string(), "function: scan()");
-    throw "scan()";
+    throw std::runtime_error("scan()");
+  }
+
+  if (!conf.explicit_sources.empty()) {
+    try {
+      scan_explicit_sources(conf);
+    } catch (const std::exception& e) {
+      Logger::debug("failed at stage: " + std::string(e.what()));
+    }
+    return;
   }
 
   try {
@@ -131,6 +160,10 @@ void generate_deps(const std::string& log_path, const Config& conf, const Source
   for (const auto &inc : conf.include_dirs) {
     cmd += " -I" + inc.string();
   }
+
+  // added this here to test if preproc defines are needed here too
+  for (const auto &flag : conf.compile_flags) cmd += " " + flag;
+
   cmd += " >> " + log_path + " 2>&1";
 
   int ret = std::system(cmd.c_str());

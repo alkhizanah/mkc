@@ -17,6 +17,10 @@ enum class BuildMode {
   debug
 };
 
+struct PkgDependency {
+  std::string name;
+};
+
 struct Config {
   int parallel_jobs           = 1;
   bool rebuild_all            = false;
@@ -32,33 +36,18 @@ struct Config {
   std::string executable_name = "app";
   std::string compiler        = "g++";
   std::string root_dir        = "."  ;
-  std::string config_file     = "mkc_config.toml"   ;
+  std::string config_file     = "mkc_config.toml";
   Verbosity log_verbosity     = Verbosity::normal;
   BuildMode build_mode        = BuildMode::release;
   // default tracked extension: .cpp, .c, .cc, .h, .hpp;
   std::vector<std::string> exclude_exts;
   std::vector<std::string> compile_flags;
   std::vector<std::string> link_flags;
-  std::vector<fs::path>    exclude_dirs = {
+  std::vector<fs::path> include_dirs;
+  std::vector<PkgDependency> pkg_deps;
+  std::vector<fs::path> explicit_sources;
+  std::vector<fs::path> exclude_dirs = {
     fs::weakly_canonical("build")
-  };
-  std::vector<fs::path>    include_dirs = {
-    // fs::path("/usr/include/libdrm"),
-    // fs::path("/usr/local/include/hyprland/protocols"),
-    // fs::path("/usr/local/include/hyprland"),
-    // fs::path("/usr/include/pango-1.0"),
-    // fs::path("/usr/include/cairo"),
-    // fs::path("/usr/include/pixman-1"),
-    // fs::path("/usr/include/libmount"),
-    // fs::path("/usr/include/blkid"),
-    // fs::path("/usr/include/fribidi"),
-    // fs::path("/usr/include/libxml2"),
-    // fs::path("/usr/include/harfbuzz"),
-    // fs::path("/usr/include/freetype2"),
-    // fs::path("/usr/include/libpng16"),
-    // fs::path("/usr/include/glib-2.0"),
-    // fs::path("/usr/lib64/glib-2.0/include"),
-    // fs::path("/usr/include/sysprof-6"),
   };
 };
 #endif

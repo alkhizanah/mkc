@@ -1,25 +1,28 @@
 #ifndef BUILDPROCEDURE_H_
 #define BUILDPROCEDURE_H_
-#include "../include/scan.h"
-#include "../include/cache.h" 
-#include "../include/compiler.h"
+#include "scan.h"
+#include "cache.h" 
+#include "compiler.h"
 
+// TODO: can we do "*.c" in our sources or use that kinda regex generally?
 // TODO: consistency with this macro should be achieved with the rest of the
 // functions, something that is currently not yet done.
 #define CACHE_PATH config.root_dir + "/build/.cache"
 #define LOG_PATH config.root_dir + "/build/log.out"
 
-void build_procedure(const Config& config) {
+void build_procedure(const Config& config, bool init_only = false) {
   int modifications = 0;
   try {
     init_working_dir(config.root_dir);
+    if (init_only) return;
     scan(config);
-  } catch (const char *msg) {
-    Logger::debug("failed at stage: " + std::string(msg));
+  } catch (const std::exception &e) {
+    Logger::debug("failed at stage: " + std::string(e.what()));
     throw;
   }
 
   load_cache(CACHE_PATH);
+
   for (auto &[_, src] : sources) {
       try {
         generate_deps(LOG_PATH, config, src);
