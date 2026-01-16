@@ -45,11 +45,10 @@ exclude_exts = [
 
 # Static lib to be compiled as a dependency with the project
 [[paths.static_lib]]
-name = "mylib"
-root = "vendor/mylib"
-sources = ["src/foo.cpp", "src/bar.cpp"]
-include_dirs = ["include"]
-compile_flags = ["-O2", "-fPIC"]
+name = "mylib.a"
+sources = ["../deps/foo.cpp", "../deps/bar.cpp"]
+include_dirs = ["../deps/include"]
+
 
 
 [flags]
