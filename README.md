@@ -50,7 +50,6 @@ root = "vendor/mylib"
 sources = ["src/foo.cpp", "src/bar.cpp"]
 include_dirs = ["include"]
 compile_flags = ["-O2", "-fPIC"]
-output = "build/lib/libmylib.a"
 
 
 [flags]
