@@ -41,7 +41,7 @@ void build_procedure(const Config& config, bool init_only = false) {
   }
   
 
-  { mark_modified(config); BENCHMARK4; }
+  { BENCHMARK4; mark_modified(config); }
 
   try {
     BENCHMARK5;
