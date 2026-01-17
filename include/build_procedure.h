@@ -14,7 +14,7 @@
 void build_procedure(const Config& config, bool init_only = false) {
   int modifications = 0;
   try {
-    BENCHMARK1;
+    BENCHMARK("init_and_scan: ");
     init_working_dir(config);
     if (init_only) return;
     scan(config);
@@ -23,12 +23,12 @@ void build_procedure(const Config& config, bool init_only = false) {
     throw;
   }
 
-  { BENCHMARK2; load_cache(CACHE_PATH); }
+  { BENCHMARK("load_cache: "); load_cache(CACHE_PATH); }
 
-  { BENCHMARK3;
+  { BENCHMARK("generate_dep_graph: ");
     for (auto &[_, src] : sources) {
       try {
-        #ifdef DEP_GEN
+        #ifndef NO_DEP_GEN
         generate_deps(LOG_PATH, config, src);
         load_compiler_deps(src); 
         #endif
@@ -41,10 +41,10 @@ void build_procedure(const Config& config, bool init_only = false) {
   }
   
 
-  { BENCHMARK4; mark_modified(config); }
+  { BENCHMARK("mark_modified: "); mark_modified(config); }
 
   try {
-    BENCHMARK5;
+    BENCHMARK("compile_and_link: ");
     modifications = compile_and_link(config);
   } catch (const char *msg) {
     Logger::printLogfile(LOG_PATH, config);
