@@ -43,6 +43,14 @@ exclude_exts = [
   ".md",
 ]
 
+# Static lib to be compiled as a dependency with the project
+[[paths.static_lib]]
+name = "mylib.a"
+sources = ["../deps/foo.cpp", "../deps/bar.cpp"]
+include_dirs = ["../deps/include"]
+
+
+
 [flags]
 # Compilation flags
 compile = [
