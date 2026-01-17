@@ -69,6 +69,38 @@ void load_toml_config(const fs::path &path, Config &config) {
       for (auto &&v : *arr->as_array())
         if (auto s = v.value<std::string>())
           config.exclude_exts.emplace_back(*s);
+    ////////////////////////////////////////////////////
+    /// static libs
+    ///////////////////////////////////////////////////
+    if (auto arr = paths->get("static_lib"); arr && arr->is_array()) {
+      for (auto &&elem : *arr->as_array()) {
+        if (auto lib_tbl = elem.as_table()) {
+          StaticLib lib;
+
+          if (auto n = lib_tbl->get("name"))
+            if (auto v = n->value<std::string>()) {
+              lib.name = *v;
+              fs::path tmp = lib.name;
+              lib.archive = tmp.replace_extension(".a");
+            }
+
+          if (auto src_arr = lib_tbl->get("sources");
+              src_arr && src_arr->is_array())
+            for (auto &&v : *src_arr->as_array())
+              if (auto s = v.value<std::string>())
+                lib.sources.emplace_back(*s);
+
+          if (auto inc_arr = lib_tbl->get("include_dirs");
+              inc_arr && inc_arr->is_array())
+            for (auto &&v : *inc_arr->as_array())
+              if (auto s = v.value<std::string>())
+                lib.include_dirs.emplace_back(*s);
+
+          config.static_libs.push_back(std::move(lib));
+        }
+      }
+    }
+    ///////////////////////////////////////////////////
   }
 
   if (auto flags = tbl["flags"].as_table()) {
@@ -253,7 +285,7 @@ void generate_example_config(const fs::path &path) {
     std::string response;
     std::getline(std::cin, response);
     if (response != "y" && response != "Y") {
-      std::cout << "Aborted.\n";
+      std::cout << "Aborted example config creation.\n";
       return;
     }
   }
@@ -282,6 +314,11 @@ mode = "debug"
 include = []
 exclude_dirs = []
 exclude_exts = []
+
+[[paths.static_lib]]
+name = "lib.a"
+sources = []
+include_dirs = []
 
 [flags]
 compile = []

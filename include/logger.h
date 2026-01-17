@@ -64,7 +64,7 @@ public:
     f_flush(force_f);
   }
 
-  static void printLogfile(const std::string& logfile_path) {
+  static void printLogfile(const std::string& logfile_path, const Config& conf) {
     if (vb == Verbosity::silent) return;
     if (!fs::exists(logfile_path)) {
       Logger::failLog("Log file does not exist at: " + logfile_path);
@@ -79,8 +79,16 @@ public:
 
     std::string line;
     std::cout << std::endl;
-    while (std::getline(file, line)) {
+    if (conf.error_nums) {
+      int i = 1;
+      while (std::getline(file, line)) {
+        std::cout << "[" << RED << i << RESET << "] " << line << std::endl;
+        i++;
+      }
+    } else {
+      while (std::getline(file, line)) {
         std::cout << line << std::endl;
+      }
     }
 
     file.close();

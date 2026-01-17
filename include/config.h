@@ -21,6 +21,14 @@ struct PkgDependency {
   std::string name;
 };
 
+
+struct StaticLib {
+  fs::path name;
+  fs::path archive;
+  std::vector<fs::path> sources;
+  std::vector<fs::path> include_dirs;
+};
+
 struct Config {
   int parallel_jobs           = 1;
   bool rebuild_all            = false;
@@ -30,9 +38,12 @@ struct Config {
   bool run_mode               = false;
   bool make_shared            = false;
   bool log_immediately        = false;
+  bool error_nums             = false;
+  bool benchmark              = false;
   bool        unity_b         = false;
   fs::path    unity_src_name  = ""   ;
   fs::path    unity_obj              ;
+  std::string benchmark_msg          ;
   std::string executable_name = "app";
   std::string compiler        = "g++";
   std::string root_dir        = "."  ;
@@ -45,6 +56,7 @@ struct Config {
   std::vector<std::string> link_flags;
   std::vector<fs::path> include_dirs;
   std::vector<PkgDependency> pkg_deps;
+  std::vector<StaticLib> static_libs;
   std::vector<fs::path> explicit_sources;
   std::vector<fs::path> exclude_dirs = {
     fs::weakly_canonical("build")

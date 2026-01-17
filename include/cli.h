@@ -37,6 +37,9 @@ Log Options:
   -s, --silent            Suppress all non-error output
   -v, --verbose           Enable verbose logging
   -d, --debug-log         Enable debug logging (highest verbosity)
+  --error-nums            Enable line number in build error log
+  --benchmark             Print time elapsed while building
+  --benchmark-msg         Note to be added beside benchmark in the logfile
   --immediate             Force flushing all logs
 
 Examples:
@@ -181,8 +184,18 @@ Config parse_cli_args(int argc, char *argv[]) {
       config.run_mode = true;
     } else if (arg == "--immediate") {
       config.log_immediately = true;
+    } else if (arg == "--error-nums") {
+      config.error_nums = true;
+    } else if (arg == "--benchmark") {
+      config.benchmark = true;
     } else if (arg == "--shared") {
       config.make_shared = true;
+    } else if (arg == "--benchmark-msg") {
+      if (i + 1 < argc) {
+        config.benchmark_msg = argv[++i];
+      } else {
+        throw std::runtime_error("--benchmark-msg requires an argument");
+      }
     } else if (arg == "-r" || arg == "--root") {
       if (i + 1 < argc) {
         config.root_dir = argv[++i];

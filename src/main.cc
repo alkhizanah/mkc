@@ -1,11 +1,11 @@
 #include "../include/build_procedure.h"
+#include "../include/parse_config.h"
 #include "../include/file_watch.h"
 #include "../include/pkg_config.h"
-#include "../include/parse_config.h"
+#include "../include/benchmark.h"
 #include "../include/cli.h"
 
 int main(int argc, char *argv[]) {
-
   // NOTE: currently, config.toml overrides cli. might want to change that 
   Config config;
   try {
@@ -50,6 +50,8 @@ int main(int argc, char *argv[]) {
     while (true) {
       if (file_watcher(config)) {
         try {
+          std::unique_ptr<BuildTimer> timer;
+          if (config.benchmark) timer = std::make_unique<BuildTimer>("finished in: ", config.benchmark_msg.c_str());
           resolve_pkg_config(config);
           build_procedure(config);
         } catch (...) {
@@ -61,6 +63,8 @@ int main(int argc, char *argv[]) {
   }
 
   try {
+    std::unique_ptr<BuildTimer> timer;
+    if (config.benchmark) timer = std::make_unique<BuildTimer>("finished in: ", config.benchmark_msg.c_str());
     resolve_pkg_config(config);
     build_procedure(config);
   } catch (...) {

@@ -12,7 +12,8 @@ namespace fs = std::filesystem;
 
 
 // TODO: make this check before creating the dirs so we don't waste time
-void init_working_dir(const fs::path &root) {
+void init_working_dir(const Config& conf) {
+  fs::path root = conf.root_dir;
   if (!fs::exists(root)) {
     Logger::failLog("directory does not exist: " + root.string(), " function: init_working_dir() failed.");
     std::cout << std::endl;
@@ -22,7 +23,11 @@ void init_working_dir(const fs::path &root) {
   try {
     fs::create_directories(root / "build");
     fs::create_directories(root / "build/obj");
-    std::ofstream(root / "build/log.out", std::ios::trunc).close();
+    fs::create_directories(root / "build/logs");
+    fs::create_directories(root / "build/lib");
+    for (const auto& lib : conf.static_libs) fs::create_directories(root / "build/lib" / lib.name);
+    std::ofstream(root / "build/logs/log.out", std::ios::trunc).close();
+    std::ofstream(root / "build/logs/benchmark_log.out", std::ios::app).close();
   } catch (...) {
     Logger::failLog("error initializing root directory \"" + root.string() + "\"");
   }
