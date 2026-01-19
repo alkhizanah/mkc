@@ -98,9 +98,9 @@ deps = [
 ]
 ```
 
-### CLI options 
+#### CLI options 
 
-```console
+```rust
 Usage: mkc [options]
 
 Config:
@@ -118,7 +118,7 @@ Compiler Options:
   --compiler <compiler>   Specify compiler (default: g++)
   -I <dir>                Add include directory
   -D <define>             Add preprocessor define
-  -O <level>              Optimization level (0, 1, 2, 3, s)
+  -O <level>              Set optimization level (0, 1, 2, 3, s)
   -f <flag>               Add compiler flag
   -l <lib>                Link library
   -L <dir>                Add library search path
