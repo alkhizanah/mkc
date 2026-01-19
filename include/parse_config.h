@@ -10,6 +10,7 @@
 void generate_example_config(const fs::path &path);
 void validate_config(const Config &c);
 
+// NOTE: currently, this function overrides cli.
 void load_toml_config(const fs::path &path, Config &config) {
   toml::table tbl;
   try {

@@ -6,7 +6,6 @@
 #include "../include/cli.h"
 
 int main(int argc, char *argv[]) {
-  // NOTE: currently, config.toml overrides cli. might want to change that 
   Config config;
   try {
     config = parse_cli_args(argc, argv);
