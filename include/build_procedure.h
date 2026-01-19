@@ -21,6 +21,9 @@ void build_procedure(const Config& config, bool init_only = false) {
   } catch (const std::exception &e) {
     Logger::debug("failed at stage: " + std::string(e.what()));
     throw;
+  } catch (int &i) {
+    // dry run catch
+    throw i;
   }
 
   { BENCHMARK("load_cache: "); load_cache(CACHE_PATH); }

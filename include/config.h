@@ -40,6 +40,8 @@ struct Config {
   bool log_immediately        = false;
   bool error_nums             = false;
   bool benchmark              = false;
+  bool dry_run                = false;
+  bool dry_run_toml           = false;
   bool        unity_b         = false;
   fs::path    unity_src_name  = ""   ;
   fs::path    unity_obj              ;

@@ -39,6 +39,8 @@ Log Options:
   -d, --debug-log         Enable debug logging (highest verbosity)
   --error-nums            Enable line number in build error log
   --benchmark             Print time elapsed while building
+  --dry-run               Scan, print sources & headers, and exit
+  --dry-run-toml          Scan and print sources in toml array format
   --benchmark-msg         Note to be added beside benchmark in the logfile
   --immediate             Force flushing all logs
 
@@ -186,6 +188,11 @@ Config parse_cli_args(int argc, char *argv[]) {
       config.log_immediately = true;
     } else if (arg == "--error-nums") {
       config.error_nums = true;
+    } else if (arg == "--dry-run") {
+      config.dry_run = true;
+    } else if (arg == "--dry-run-toml") {
+      config.dry_run = true;
+      config.dry_run_toml = true;
     } else if (arg == "--benchmark") {
       config.benchmark = true;
     } else if (arg == "--shared") {

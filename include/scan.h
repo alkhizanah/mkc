@@ -75,8 +75,6 @@ void scan_explicit_sources(const Config &conf) {
   }
 }
 
-
-
 void scan(const Config &conf) {
   fs::path root = fs::path(conf.root_dir);
   if (!fs::exists(root)) {
@@ -89,6 +87,10 @@ void scan(const Config &conf) {
       scan_explicit_sources(conf);
     } catch (const std::exception& e) {
       Logger::debug("failed at stage: " + std::string(e.what()));
+    }
+    if (conf.dry_run) { 
+      Logger::print_src_and_hdr(conf.dry_run_toml);
+      throw 1;
     }
     return;
   }
@@ -105,7 +107,6 @@ void scan(const Config &conf) {
       // NOTE: obviously this exclusion is a performance hit.
       // it would be better not to use this, but I made the 
       // option anyway, for special cases.
-      // filtering excluded extensions
       if (is_excluded(conf, path, ext)) continue;
 
       if (ext == ".cpp" || ext == ".c" || ext == ".cc") {
@@ -121,11 +122,18 @@ void scan(const Config &conf) {
                       " with hash: " + std::to_string(hf.hash));
       }
     }
+
+    if (conf.dry_run) { 
+      Logger::print_src_and_hdr(conf.dry_run_toml);
+      throw 1;
+    }
   } catch (const fs::filesystem_error &e) {
     Logger::failLog("error iterating over \""
                     + root.string()
                     + "\" directory, please check for permission denial, symlink loops, etc.",
                     e.what());
+  } catch (int& i) {
+    throw i;
   }
 }
 

@@ -4,6 +4,8 @@
 #include <fstream>
 #include <string>
 #include "config.h"
+#include "containers.h"
+#include "helpers.h"
 
 #define BLUE            "\033[34m"
 #define MAGENTA         "\033[35m"
@@ -94,6 +96,43 @@ public:
     file.close();
     f_flush(force_f);
   }
+
+  static void print_src_and_hdr(bool print_as_toml_array) {
+    int i = 1;
+    int j = 1;
+    int width = 3;
+    if (print_as_toml_array) {
+      std::cout << BLUE << "\n######## sources ########" << RESET << std::endl;
+      for (const auto& [_, src] : sources) {
+        std::cout << "  \"" << readable_path(src.path) << "\", " << std::endl;
+      }
+      if (!headers.empty()) {
+      std::cout << BLUE << "\n######## headers ########" << RESET << std::endl;
+        for (const auto& [_, hdr] : headers) {
+          std::cout << "  \"" << readable_path(hdr.path) << "\", " << std::endl;
+        }
+      }
+    } else {
+      std::cout << "\n[" << CYAN << "sources" << RESET << "] " << std::endl;
+      for (const auto& [_, src] : sources) {
+        std::string num = std::to_string(i);
+        std::cout << "[" << BLUE << num << RESET << "]" << std::string(width - num.length(), ' ') << " " << readable_path(src.path) << std::endl;
+        i++;
+      }
+      std::cout << "[" << CYAN << "LOG" << RESET << "] " << " " << (i - 1) << " sources." << std::endl;
+      if (!headers.empty()) {
+        std::cout << "[" << CYAN << "headers" << RESET << "] " << std::endl;
+        for (const auto& [_, hdr] : headers) {
+          std::string num = std::to_string(j);
+          std::cout << "[" << BLUE << num << RESET << "]" << std::string(width - num.length(), ' ') << " " << readable_path(hdr.path) << std::endl;
+          j++;
+        }
+        std::cout << "[" << CYAN << "LOG" << RESET << "] " << " " << (j - 1) << " headers." << std::endl;
+      }
+      std::cout << "[" << CYAN << "LOG" << RESET << "] " << " total: " << (i + j - 2) << " files." << std::endl;
+    }
+  }
+
 };
 
 Verbosity Logger::vb = Verbosity::normal;
