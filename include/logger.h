@@ -132,7 +132,6 @@ public:
       std::cout << "[" << CYAN << "LOG" << RESET << "] " << " total: " << (i + j - 2) << " files." << std::endl;
     }
   }
-
 };
 
 Verbosity Logger::vb = Verbosity::normal;

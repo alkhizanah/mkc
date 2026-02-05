@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>
 #include "config.h"
+
 namespace fs = std::filesystem;
 
 // normalizes paths from "./logger.h" into "logger.h"

@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[]) {
   Config config;
-  try {
+  try { // TODO: move the error to be after usage, if any
     config = parse_cli_args(argc, argv);
   } catch (const std::exception &e) {
     std::cerr << "Error: " << e.what() << "\n";
@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     generate_example_config(config.config_file);
     return 1;
   }
-
+ 
   if (config.show_help) {
     printHelp();
     return 0;
@@ -45,7 +45,8 @@ int main(int argc, char *argv[]) {
   
 
   if (config.watch_mode) {
-    Logger::warningLog("Watching for changes on root directory: \"" + config.root_dir + "\"");
+    Logger::warningLog("Watching for changes on root directory: \"" + config.root_dir + "\""); 
+    std::cout.flush();
     while (true) {
       if (file_watcher(config)) {
         try {

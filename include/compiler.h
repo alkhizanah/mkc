@@ -5,37 +5,7 @@
 #include <mutex>
 #include <thread>
 #include "compiler_unity.h"
-
-
-bool build_static_lib(const Config& conf, const StaticLib& lib) {
-  // TODO: increment rebuild and account for those in cache
-  std::vector<fs::path> objects;
-  std::string lib_dir = "build/lib/" + lib.name.string() + "/";
-  for (const auto& src : lib.sources) {
-    fs::path obj = lib_dir + src.filename().replace_extension(".o").string();
-    objects.push_back(obj);
-
-    std::string cmd = conf.compiler;
-    cmd += " -c " + src.string();
-    cmd += " -o " + obj.string();
-
-    for (auto& inc : lib.include_dirs) cmd += " -I" + inc.string();
-    for (const auto &flag : conf.compile_flags) cmd += " " + flag;
-
-    std::string cmd_no_log = cmd;
-    std::string logfile = "build/logs/log_" + src.filename().stem().string() + ".out";
-    cmd += " >> " + logfile + " 2>&1";
-    if (std::system(cmd.c_str()) != 0) return false;
-    Logger::successLog("compiled: " + readable_path(src));
-    Logger::infoLog("compile command was: " + cmd_no_log);
-  }
-  fs::remove(lib_dir + lib.archive.string());
-  std::string ar = "ar rcs ";
-  ar += lib_dir + lib.archive.string();
-  for (auto& obj : objects) ar += " " + obj.string();
-  return std::system(ar.c_str()) == 0;
-}
-
+#include "static_lib.h"
 
 
 // NOTE TO SELF: compile flags MUST be the same as the ones we pass to dep_gen func.
@@ -152,9 +122,9 @@ int compile_and_link(const Config &conf) {
   
   if (!conf.unity_b) {
     if (modif_count == 1) {
-      Logger::successLog("recompiled: " + std::to_string(modif_count) + " file");
+      Logger::debug("recompiled: " + std::to_string(modif_count) + " file");
     } else {
-      Logger::successLog("recompiled: " + std::to_string(modif_count) + " files");
+      Logger::debug("recompiled: " + std::to_string(modif_count) + " files");
     }
   }
 

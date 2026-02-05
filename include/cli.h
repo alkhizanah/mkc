@@ -18,7 +18,6 @@ Config:
   --exclude-fmt           Exclude a file extension (eg: .c)
   -r, --root <dir>        Set project root directory (default: .)
   -o, --output <name>     Specify output executable name
-  --track-external        Track external header dependencies
   
 Compiler Options:
   --compiler <compiler>   Specify compiler (default: g++)
@@ -179,8 +178,6 @@ Config parse_cli_args(int argc, char *argv[]) {
       } else {
         throw std::runtime_error("--config requires an argument");
       }
-    } else if (arg == "--track-external") {
-      config.track_external_headers = true;
     } else if (arg == "--watch") {
       config.watch_mode = true;
     } else if (arg == "--run") {

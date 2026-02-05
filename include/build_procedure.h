@@ -31,10 +31,11 @@ void build_procedure(const Config& config, bool init_only = false) {
   { BENCHMARK("generate_dep_graph: ");
     for (auto &[_, src] : sources) {
       try {
-        #ifndef NO_DEP_GEN
-        generate_deps(LOG_PATH, config, src);
-        load_compiler_deps(src); 
-        #endif
+        fs::path dep = depfile_path(src.path);
+        if (need_regen_deps(src.path, dep)) {
+          generate_deps(LOG_PATH, config, src);
+        }
+        load_compiler_deps(src);
       } catch (const char *msg) {
         Logger::printLogfile(LOG_PATH, config);
         Logger::debug("failed at stage: " + std::string(msg));
@@ -56,10 +57,21 @@ void build_procedure(const Config& config, bool init_only = false) {
   }
 
   save_cache(CACHE_PATH);
-      
-  if (config.run_mode && modifications != 0) {
+  if (modifications != 0) Logger::successLog("built: " + config.executable_name);
+  std::cout.flush();
+
+  if (config.run_mode) {
     std::string executable_path = config.root_dir + "/build/" + config.executable_name;
-    std::system(executable_path.c_str());
+    std::cout << "\n";
+    if (config.watch_mode) {
+      if (modifications != 0) {
+        if (fs::exists(executable_path))
+          std::system(executable_path.c_str());
+      }
+    } else {
+      if (fs::exists(executable_path))
+        std::system(executable_path.c_str());
+    }
   }
 }
 #endif

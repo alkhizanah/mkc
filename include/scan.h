@@ -9,8 +9,6 @@
 
 namespace fs = std::filesystem;
 
-
-
 // TODO: make this check before creating the dirs so we don't waste time
 void init_working_dir(const Config& conf) {
   fs::path root = conf.root_dir;
@@ -33,6 +31,7 @@ void init_working_dir(const Config& conf) {
   }
 }
 
+
 uint64_t hash_file(const fs::path &p) {
   if (!fs::exists(p)) {
     Logger::failLog("file does not exist: " + readable_path(p), " function: hash_file() failed.");
@@ -51,11 +50,10 @@ uint64_t hash_file(const fs::path &p) {
   } catch (const std::ios_base::failure &e) {
     Logger::failLog("hash_file(): failed to read \"" + readable_path(p) + "\"", e.what());
   }
-  Logger::debug("hashed file: " + readable_path(p));
-  Logger::debug("hash: " + std::to_string(hash));
+  // Logger::debug("hashed file: " + readable_path(p));
+  // Logger::debug("hash: " + std::to_string(hash));
   return hash;
 }
-
 
 
 void scan_explicit_sources(const Config &conf) {
@@ -137,29 +135,6 @@ void scan(const Config &conf) {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////////
-
-// void parse_includes(SourceFile &src) {
-//   if (!fs::exists(src.path)) {
-//     Logger::failLog("file does not exist: " + readable_path(src.path), " function: parse_includes() failed.");
-//   }
-//   std::ifstream in(src.path);
-//   ENABLE_EXCEPTIONS(in);
-//   std::string line;
-//   try {
-//     while (std::getline(in, line)) {
-//       if (line.find("#include \"") == 0) {
-//         auto start = line.find('"') + 1;
-//         auto end = line.find('"', start);
-//         src.includes.emplace_back(line.substr(start, end - start));
-//         Logger::debug("found include: " + line.substr(start, end - start) + " in source file: " + readable_path(src.path));
-//       }
-//     }
-//   } catch (const std::ios_base::failure &e) {
-//     Logger::failLog("parse_includes(): failed to parse includes for \"" + readable_path(src.path) + "\"", e.what());
-//   }
-// }
-
 
 void generate_deps(const std::string& log_path, const Config& conf, const SourceFile &src) {
   fs::path dep_file = src.object;
@@ -187,6 +162,20 @@ void generate_deps(const std::string& log_path, const Config& conf, const Source
   }
 }
 
+fs::path depfile_path(const fs::path& src) {
+  fs::path p = src;
+  p.replace_extension(".d");
+  return fs::path("build/obj") / p.filename();
+}
+
+bool need_regen_deps(const fs::path& src, const fs::path& depfile) {
+  if (!fs::exists(depfile)) {
+    return true;
+  }
+  auto src_time = fs::last_write_time(src);
+  auto dep_time = fs::last_write_time(depfile);
+  return src_time > dep_time;
+}
 
 // TODO: we enable exceptions here but we aren't catching them
 std::vector<fs::path> parse_dep_file(const fs::path &dep_path) {
@@ -254,26 +243,19 @@ void mark_modified(const Config &conf) {
       std::string normalized = normalize_path(resolved_include);
       std::string pretty_path = readable_path(resolved_include);
 
-      Logger::debug("  checking include: " + inc.string() + " -> " + pretty_path);
-
       auto it = headers.find(normalized);
 
-      if (it == headers.end()) { // if this is an external header that we aren't tracking
+      if (it == headers.end()) {
         if (!conf.track_external_headers) {
-          Logger::debug("  skipping external header: " + pretty_path);
+          // Logger::debug("  skipping external header: " + pretty_path);
           continue;
         }
-
-        Logger::debug("  tracking new external header: " + pretty_path);
+        // Logger::debug("  tracking new external header: " + pretty_path);
         HeaderFile hf;
         hf.path = resolved_include;
         hf.hash = hash_file(resolved_include);
         it = headers.emplace(normalized, std::move(hf)).first;
       }
-
-      // uint64_t current_hash = hash_file(it->second.path);
-      // Logger::debug("mark_modified(): " + readable_path(it->second.path) +
-      //               " current hash: " + std::to_string(current_hash));
 
       auto oh = old_hashes.find(normalized);
       if (oh == old_hashes.end() // if the hash isn't in the old hashes or..

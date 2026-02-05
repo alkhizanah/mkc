@@ -304,8 +304,6 @@ void generate_example_config(const fs::path &path) {
 
 [tool]
 compiler = "g++"
-parallel_jobs = 1
-watch = false
 verbosity = "normal"
 
 [build]
