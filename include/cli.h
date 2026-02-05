@@ -18,7 +18,9 @@ Config:
   --exclude-fmt           Exclude a file extension (eg: .c)
   -r, --root <dir>        Set project root directory (default: .)
   -o, --output <name>     Specify output executable name
-  
+  -j, --jobs <num>        Number of parallel compilation jobs
+  -c, --clean             Rebuild all files (same as --clean)
+
 Compiler Options:
   --compiler <compiler>   Specify compiler (default: g++)
   -I <dir>                Add include directory
@@ -45,11 +47,9 @@ Log Options:
   --immediate             Force flushing all logs
 
 Examples:
-  mkc                           # Normal build
   mkc --clean --debug           # Clean debug build
-  mkc -j4 -O3                   # Parallel release build with -O3
+  mkc -j 4 -O 3                  # Parallel release build with -O3
   mkc --watch --run             # Watch, rebuild and run on changes
-  mkc -o myapp -I./external     # Custom output name and includes
 )";
 }
 
@@ -78,14 +78,6 @@ Config parse_cli_args(int argc, char *argv[]) {
 
     else if (arg == "-c" || arg == "--clean") {
       config.rebuild_all = true;
-      // TODO: force rebuild all
-    } else if (arg == "--debug") {
-      config.build_mode = BuildMode::debug;
-      // TODO: add debug flags `-g, -O0` to compile_flags
-      // NOTE: must see who overrides who in terms of -O and the debug / release build types
-    } else if (arg == "--release") {
-      config.build_mode = BuildMode::release;
-      // TODO: add release flags `-O2, -DNDEBUG` to compile_flags
     } else if (arg == "-o" || arg == "--output") {
       if (i + 1 < argc) {
         config.executable_name = argv[++i];

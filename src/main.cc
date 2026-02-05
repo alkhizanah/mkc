@@ -10,8 +10,8 @@ int main(int argc, char *argv[]) {
   try { // TODO: move the error to be after usage, if any
     config = parse_cli_args(argc, argv);
   } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << "\n";
     printHelp();
+    std::cerr << RED << "\nError: "  << RESET << e.what() << "\n";
     return 1;
   } catch (const int& x) {
     // NOTE: here we just init the working dir and leave
