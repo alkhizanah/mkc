@@ -49,8 +49,7 @@ exclude_dirs = [
 ]
 # File extensions to exclude from recursive scan.
 exclude_exts = [
-  ".txt",
-  ".md",
+  ".c"
 ]
 # Static lib to be compiled as a dependency with the project
 [[paths.static_lib]]
