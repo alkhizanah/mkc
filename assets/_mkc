@@ -1,0 +1,21 @@
+#compdef mkc
+
+_mkc() {
+    local -a opts
+    opts=(
+        init
+        --config --watch --run --exclude --exclude-fmt
+        -r --root -o --output --compiler
+        -I -D -O -f -l -L
+        --unity --link-flags --shared
+        -c --clean -h --help
+        -s --silent -v --verbose -d --debug-log
+        -j --jobs
+        --error-nums --benchmark --dry-run --dry-run-toml
+        --benchmark-msg --immediate
+    )
+    
+    _arguments "*: :(${opts})"
+}
+
+_mkc
