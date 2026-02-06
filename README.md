@@ -1,5 +1,56 @@
 # A straight-forward build tool.
 
+
+#### CLI options 
+
+```rust
+Usage: mkc [options]
+
+Config:
+  init                    Create example config and initialize current directory
+  --config <file>         Load configuration from file
+  --watch                 Watch project directory for changes and rebuild.
+  --run                   Run the executable after compilation
+  --exclude <file>        Exclude directory or specific file
+  --exclude-fmt           Exclude a file extension (eg: .c)
+  -r, --root <dir>        Set project root directory (default: .)
+  -o, --output <name>     Specify output executable name
+  -j, --jobs <num>        Number of parallel compilation jobs
+  -c, --clean             Rebuild all files (same as --clean)
+
+Compiler Options:
+  --compiler <compiler>   Specify compiler (default: g++)
+  -I <dir>                Add include directory
+  -D <define>             Add preprocessor define
+  -O <level>              Optimization level (0, 1, 2, 3, s)
+  -f <flag>               Add compiler flag
+  -l <lib>                Link library
+  -L <dir>                Add library search path
+  --unity <name>          Set unity build to true, auto-generate translation unit
+  --link-flags            Add arbitrary flags for the linker
+  --shared                Use when creating a shared object
+  --clean                 Rebuild all files
+
+Log Options:
+  -h, --help              Show this help message
+  -s, --silent            Suppress all non-error output
+  -v, --verbose           Enable verbose logging
+  -d, --debug-log         Enable debug logging (highest verbosity)
+  --error-nums            Enable line number in build error log
+  --benchmark             Print time elapsed while building
+  --dry-run               Scan, print sources & headers, and exit
+  --dry-run-toml          Scan and print sources in toml array format
+  --benchmark-msg         Note to be added beside benchmark in the logfile
+  --immediate             Force flushing all logs
+
+Examples:
+  mkc --clean --debug           # Clean debug build
+  mkc -j 4 -O 3                  # Parallel release build with -O3
+  mkc --watch --run             # Watch, rebuild and run on changes
+```
+
+
+
 #### Example mkc_config.toml
 
 ```toml
@@ -64,50 +115,3 @@ deps = [
 ]
 ```
 
-#### CLI options 
-
-```rust
-Usage: mkc [options]
-
-Config:
-  init                    Create example config and initialize current directory
-  --config <file>         Load configuration from file
-  --watch                 Watch project directory for changes and rebuild.
-  --run                   Run the executable after compilation
-  --exclude <file>        Exclude directory or specific file
-  --exclude-fmt           Exclude a file extension (eg: .c)
-  -r, --root <dir>        Set project root directory (default: .)
-  -o, --output <name>     Specify output executable name
-  -j, --jobs <num>        Number of parallel compilation jobs
-  -c, --clean             Rebuild all files (same as --clean)
-
-Compiler Options:
-  --compiler <compiler>   Specify compiler (default: g++)
-  -I <dir>                Add include directory
-  -D <define>             Add preprocessor define
-  -O <level>              Optimization level (0, 1, 2, 3, s)
-  -f <flag>               Add compiler flag
-  -l <lib>                Link library
-  -L <dir>                Add library search path
-  --unity <name>          Set unity build to true, auto-generate translation unit
-  --link-flags            Add arbitrary flags for the linker
-  --shared                Use when creating a shared object
-  --clean                 Rebuild all files
-
-Log Options:
-  -h, --help              Show this help message
-  -s, --silent            Suppress all non-error output
-  -v, --verbose           Enable verbose logging
-  -d, --debug-log         Enable debug logging (highest verbosity)
-  --error-nums            Enable line number in build error log
-  --benchmark             Print time elapsed while building
-  --dry-run               Scan, print sources & headers, and exit
-  --dry-run-toml          Scan and print sources in toml array format
-  --benchmark-msg         Note to be added beside benchmark in the logfile
-  --immediate             Force flushing all logs
-
-Examples:
-  mkc --clean --debug           # Clean debug build
-  mkc -j 4 -O 3                  # Parallel release build with -O3
-  mkc --watch --run             # Watch, rebuild and run on changes
-```
