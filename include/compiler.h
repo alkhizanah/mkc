@@ -138,17 +138,4 @@ int compile_and_link(const Config &conf) {
 
 
 
-
-// compile flags for hyprland plugin
-    // // note: remove this later
-    // cmd += " -std=c++23";
-    // cmd += " -D WITH_GZFILEOP";
-    // cmd += " -fPIC";
-    // //////////////////
-// link flags for hyprland plugin 
-  // // note: remove later
-  // cmd +=  " -Wl,--unresolved-symbols=ignore-all";
-  // // ////
-
-
 #endif

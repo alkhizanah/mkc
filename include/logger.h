@@ -22,8 +22,6 @@ void f_flush(bool force) {
   std::cout.flush();
 }
 
-// TODO: convert some debugs into info logs to separate dev logs from 
-// the logs that are a concern for the end-user
 class Logger {
 private:
   static Verbosity vb;

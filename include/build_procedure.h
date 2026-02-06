@@ -5,7 +5,6 @@
 #include "cache.h" 
 #include "compiler.h"
 #include "tests.h"
-// TODO: can we do "*.c" in our sources or use that kinda regex generally?
 // TODO: consistency with this macro should be achieved with the rest of the
 // functions, something that is currently not yet done.
 #define CACHE_PATH config.root_dir + "/build/.cache"
@@ -57,7 +56,7 @@ void build_procedure(const Config& config, bool init_only = false) {
   }
 
   save_cache(CACHE_PATH);
-  if (modifications != 0) Logger::successLog("built: " + config.executable_name);
+  if (modifications != 0) Logger::successLog("build target: " + config.executable_name);
   std::cout.flush();
 
   if (config.run_mode) {

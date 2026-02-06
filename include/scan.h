@@ -9,7 +9,6 @@
 
 namespace fs = std::filesystem;
 
-// TODO: make this check before creating the dirs so we don't waste time
 void init_working_dir(const Config& conf) {
   fs::path root = conf.root_dir;
   if (!fs::exists(root)) {
@@ -102,9 +101,6 @@ void scan(const Config &conf) {
       std::string normalized = normalize_path(path);
       std::string pretty_path = readable_path(path);
      
-      // NOTE: obviously this exclusion is a performance hit.
-      // it would be better not to use this, but I made the 
-      // option anyway, for special cases.
       if (is_excluded(conf, path, ext)) continue;
 
       if (ext == ".cpp" || ext == ".c" || ext == ".cc") {
@@ -177,7 +173,6 @@ bool need_regen_deps(const fs::path& src, const fs::path& depfile) {
   return src_time > dep_time;
 }
 
-// TODO: we enable exceptions here but we aren't catching them
 std::vector<fs::path> parse_dep_file(const fs::path &dep_path) {
   std::ifstream in(dep_path);
   ENABLE_EXCEPTIONS(in);

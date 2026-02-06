@@ -7,14 +7,13 @@
 
 int main(int argc, char *argv[]) {
   Config config;
-  try { // TODO: move the error to be after usage, if any
+  try { 
     config = parse_cli_args(argc, argv);
   } catch (const std::exception &e) {
     printHelp();
     std::cerr << RED << "\nError: "  << RESET << e.what() << "\n";
     return 1;
   } catch (const int& x) {
-    // NOTE: here we just init the working dir and leave
     build_procedure(config, true);
     generate_example_config(config.config_file);
     return 1;
@@ -42,7 +41,6 @@ int main(int argc, char *argv[]) {
   for (auto& p : config.include_dirs) normalize_fs_path(p);
   for (auto& p : config.exclude_dirs) normalize_fs_path(p);
   if (config.unity_b) config.exclude_dirs.push_back(fs::weakly_canonical("build"));
-  
 
   if (config.watch_mode) {
     Logger::warningLog("Watching for changes on root directory: \"" + config.root_dir + "\""); 

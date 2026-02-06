@@ -41,9 +41,7 @@ bool watch(const fs::path &root) {
   if (len > 0) {
     std::this_thread::sleep_for(std::chrono::milliseconds(DEBOUNCE_MS));
     fcntl(fd, F_SETFL, O_NONBLOCK);
-    while (read(fd, buf, sizeof(buf)) > 0) {
-      // just consuming the events not doing anything with them
-    }
+    while (read(fd, buf, sizeof(buf)) > 0) {}
     fcntl(fd, F_SETFL, 0);
   }
 

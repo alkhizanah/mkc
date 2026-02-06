@@ -166,7 +166,6 @@ Config parse_cli_args(int argc, char *argv[]) {
     else if (arg == "--config") {
       if (i + 1 < argc) {
         config.config_file = argv[++i];
-        // TODO: config file parsing
       } else {
         throw std::runtime_error("--config requires an argument");
       }
