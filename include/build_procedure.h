@@ -14,7 +14,6 @@
 void build_procedure(const Config& config, bool init_only = false) {
   int modifications = 0;
   try {
-    BENCHMARK("init_and_scan: ");
     init_working_dir(config);
     if (init_only) return;
     scan(config);
@@ -26,29 +25,27 @@ void build_procedure(const Config& config, bool init_only = false) {
     throw i;
   }
 
-  { BENCHMARK("load_cache: "); load_cache(CACHE_PATH); }
+  load_cache(CACHE_PATH);
 
-  { BENCHMARK("generate_dep_graph: ");
-    for (auto &[_, src] : sources) {
-      try {
-        fs::path dep = depfile_path(src.path);
-        if (need_regen_deps(src.path, dep)) {
-          generate_deps(LOG_PATH, config, src);
-        }
-        load_compiler_deps(src);
-      } catch (const char *msg) {
-        Logger::printLogfile(LOG_PATH, config);
-        Logger::debug("failed at stage: " + std::string(msg));
-        throw;
+  for (auto &[_, src] : sources) {
+    try {
+      fs::path dep = depfile_path(src.path);
+      if (need_regen_deps(src.path, dep)) {
+        generate_deps(LOG_PATH, config, src);
       }
+      load_compiler_deps(src);
+    } catch (const char *msg) {
+      Logger::printLogfile(LOG_PATH, config);
+      Logger::debug("failed at stage: " + std::string(msg));
+      throw;
     }
   }
+
   
 
-  { BENCHMARK("mark_modified: "); mark_modified(config); }
+  mark_modified(config);
 
   try {
-    BENCHMARK("compile_and_link: ");
     modifications = compile_and_link(config);
   } catch (const char *msg) {
     Logger::printLogfile(LOG_PATH, config);

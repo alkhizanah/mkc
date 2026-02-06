@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     try {
       load_toml_config(config.config_file, config);
     } catch (const std::exception &e) {
-      Logger::failLog("No config: proceeding with defaults.", e.what());
+      Logger::failLog("No config detected: proceeding with defaults.", e.what());
     } catch (...) {
       std::cout << std::endl;
       return 1;
