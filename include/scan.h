@@ -145,9 +145,6 @@ void generate_deps(const std::string& log_path, const Config& conf, const Source
     cmd += " -I" + inc.string();
   }
 
-  // added this here to test if preproc defines are needed here too
-  for (const auto &flag : conf.compile_flags) cmd += " " + flag;
-
   cmd += " >> " + log_path + " 2>&1";
 
   int ret = std::system(cmd.c_str());

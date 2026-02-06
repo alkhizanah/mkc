@@ -5,6 +5,7 @@
 #include "cache.h" 
 #include "compiler.h"
 #include "tests.h"
+
 // TODO: consistency with this macro should be achieved with the rest of the
 // functions, something that is currently not yet done.
 #define CACHE_PATH config.root_dir + "/build/.cache"

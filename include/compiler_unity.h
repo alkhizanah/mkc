@@ -17,9 +17,6 @@ fs::path generate_unity_file(const Config& conf) {
   return conf.unity_src_name;
 }
 
-
-
-
 bool compile_unity(const Config& conf, int &modified) {
   bool need = conf.rebuild_all;
   if (!need) {
