@@ -29,7 +29,6 @@ Compiler Options:
   --unity <name>          Set unity build to true, auto-generate translation unit
   --link-flags            Add arbitrary flags for the linker
   --shared                Use when creating a shared object
-  --clean                 Rebuild all files
 
 Log Options:
   -h, --help              Show this help message
@@ -44,7 +43,6 @@ Log Options:
   --immediate             Force flushing all logs
 
 Examples:
-  mkc --clean --debug           # Clean debug build
   mkc -j 4 -O 3                  # Parallel release build with -O3
   mkc --watch --run             # Watch, rebuild and run on changes
 ```
