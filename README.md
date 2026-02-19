@@ -16,7 +16,7 @@ Config:
   -r, --root <dir>        Set project root directory (default: .)
   -o, --output <name>     Specify output executable name
   -j, --jobs <num>        Number of parallel compilation jobs
-  -c, --clean             Rebuild all files (same as --clean)
+  -c, --clean             Rebuild all files
 
 Compiler Options:
   --compiler <compiler>   Specify compiler (default: g++)
