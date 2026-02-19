@@ -1,9 +1,10 @@
 #ifndef PARSECONF_H_
 #define PARSECONF_H_
-#include <toml++/toml.h>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+
+#include "toml.h"
 #include "config.h"
 #include "logger.h"
 
