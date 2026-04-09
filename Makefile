@@ -1,3 +1,3 @@
 all:
 	mkdir -p build
-	$(CXX) -o build/mkc src/file_watch.cc src/main.cc
+	$(CXX) -o build/mkc src/main.cc
