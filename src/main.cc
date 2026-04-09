@@ -1,9 +1,9 @@
-#include "../include/benchmark.hh"
-#include "../include/build_procedure.hh"
-#include "../include/cli.hh"
-#include "../include/file_watch.hh"
-#include "../include/parse_config.hh"
-#include "../include/pkg_config.hh"
+#include "benchmark.hh"
+#include "build_procedure.hh"
+#include "cli.hh"
+#include "file_watch.hh"
+#include "parse_config.hh"
+#include "pkg_config.hh"
 
 int main(int argc, char *argv[]) {
     Config config;
