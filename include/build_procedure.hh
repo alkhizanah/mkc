@@ -1,10 +1,10 @@
 #ifndef BUILDPROCEDURE_H_
 #define BUILDPROCEDURE_H_
-#include "benchmark.h"
-#include "scan.h"
-#include "cache.h" 
-#include "compiler.h"
-#include "tests.h"
+#include "benchmark.hh"
+#include "scan.hh"
+#include "cache.hh" 
+#include "compiler.hh"
+#include "tests.hh"
 
 // TODO: consistency with this macro should be achieved with the rest of the
 // functions, something that is currently not yet done.

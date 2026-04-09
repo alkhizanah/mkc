@@ -4,9 +4,9 @@
 #include <sstream>
 #include <iostream>
 
-#include "toml.h"
-#include "config.h"
-#include "logger.h"
+#include "toml.hh"
+#include "config.hh"
+#include "logger.hh"
 
 void generate_example_config(const fs::path &path);
 void validate_config(const Config &c);

@@ -4,8 +4,8 @@
 #include <future>
 #include <mutex>
 #include <thread>
-#include "compiler_unity.h"
-#include "static_lib.h"
+#include "compiler_unity.hh"
+#include "static_lib.hh"
 
 
 // NOTE TO SELF: compile flags MUST be the same as the ones we pass to dep_gen func.

@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <string>
 #include <fstream>
-#include "logger.h"
-#include "exceptions.h"
-#include "helpers.h"
-#include "containers.h"
+#include "logger.hh"
+#include "exceptions.hh"
+#include "helpers.hh"
+#include "containers.hh"
 namespace fs = std::filesystem;
 
 void cleanTemp(const fs::path &tempPath) {

@@ -1,8 +1,8 @@
 #ifndef CLI_H_
 #define CLI_H_
 #include <iostream> 
-#include "parse_config.h"
-#include "config.h"
+#include "parse_config.hh"
+#include "config.hh"
 
 
 void printHelp() {

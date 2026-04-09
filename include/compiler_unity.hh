@@ -1,8 +1,9 @@
 #ifndef COMPILEUNITY_H_
 #define COMPILEUNITY_H_
-#include "containers.h"
-#include "helpers.h"
-#include "logger.h"
+#include "containers.hh"
+#include "helpers.hh"
+#include "logger.hh"
+#include "config.hh"
   
 
 fs::path generate_unity_file(const Config& conf) {

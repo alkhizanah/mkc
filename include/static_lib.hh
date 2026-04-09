@@ -1,8 +1,8 @@
 #ifndef STATICLIB_H_
 #define STATICLIB_H_
-#include "config.h"
-#include "tests.h"
-#include "scan.h"
+#include "config.hh"
+#include "tests.hh"
+#include "scan.hh"
 
 fs::path lib_cache_path(const StaticLib& lib) {
   return fs::path("build/lib") / lib.name / ".mkc.hash";

@@ -1,4 +1,4 @@
-#include "../include/file_watch.h"
+#include "../include/file_watch.hh"
 #ifdef __linux__
 #include <filesystem>
 #include <sys/inotify.h>

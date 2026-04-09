@@ -1,6 +1,6 @@
 #ifndef FILEWATCH_H_
 #define FILEWATCH_H_
-#include "config.h"
+#include "config.hh"
 // number of milliseconds that will be used to debounce the file_watcher 
 // so that it doesn't retrigger builds too quick. 
 #define DEBOUNCE_MS 100

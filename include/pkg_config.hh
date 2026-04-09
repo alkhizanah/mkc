@@ -2,8 +2,8 @@
 #define PKGCONF_H_
 #include <string>
 #include <array>
-#include "config.h"
-#include "logger.h"
+#include "config.hh"
+#include "logger.hh"
 
 std::string cmd_output(const std::string& cmd) {
   if (cmd.empty())

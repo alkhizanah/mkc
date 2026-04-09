@@ -4,11 +4,11 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
-#include "config.h"
+#include "config.hh"
 
 namespace fs = std::filesystem;
 
-// normalizes paths from "./logger.h" into "logger.h"
+// normalizes paths from "./logger.hh" into "logger.hh"
 std::string normalize_path(const fs::path& p) {
   try {
     return fs::weakly_canonical(p).string();

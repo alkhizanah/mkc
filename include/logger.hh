@@ -3,9 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "config.h"
-#include "containers.h"
-#include "helpers.h"
+#include "config.hh"
+#include "containers.hh"
+#include "helpers.hh"
 
 #define BLUE            "\033[34m"
 #define MAGENTA         "\033[35m"
