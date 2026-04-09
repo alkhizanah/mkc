@@ -1,5 +1,28 @@
 # A straight-forward build tool.
 
+#### Building from source
+
+You only need a C++ compiler, and some patience, the project is made of one source file that includes multiple header files with implementation in them:
+
+```
+g++ src/main.cc -o mkc
+```
+
+If you have a mkc instance already then compile it using the mkc instance you have by running:
+
+```
+mkc
+```
+
+The output binary file will be at `build/nur`.
+
+You can add more optimization:
+
+```
+g++ src/main.cc -o mkc -O3
+# Or
+mkc -O 3
+```
 
 #### CLI options 
 
