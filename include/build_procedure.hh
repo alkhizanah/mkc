@@ -1,9 +1,9 @@
 #ifndef BUILDPROCEDURE_H_
 #define BUILDPROCEDURE_H_
 #include "benchmark.hh"
-#include "scan.hh"
-#include "cache.hh" 
+#include "cache.hh"
 #include "compiler.hh"
+#include "scan.hh"
 #include "tests.hh"
 
 // TODO: consistency with this macro should be achieved with the rest of the
@@ -11,64 +11,65 @@
 #define CACHE_PATH config.root_dir + "/build/.cache"
 #define LOG_PATH config.root_dir + "/build/logs/log.out"
 
-void build_procedure(const Config& config, bool init_only = false) {
-  int modifications = 0;
-  try {
-    init_working_dir(config);
-    if (init_only) return;
-    scan(config);
-  } catch (const std::exception &e) {
-    Logger::debug("failed at stage: " + std::string(e.what()));
-    throw;
-  } catch (int &i) {
-    // dry run catch
-    throw i;
-  }
-
-  load_cache(CACHE_PATH);
-
-  for (auto &[_, src] : sources) {
+void build_procedure(const Config &config, bool init_only = false) {
+    int modifications = 0;
     try {
-      fs::path dep = depfile_path(src.path);
-      if (need_regen_deps(src.path, dep)) {
-        generate_deps(LOG_PATH, config, src);
-      }
-      load_compiler_deps(src);
+        init_working_dir(config);
+        if (init_only)
+            return;
+        scan(config);
+    } catch (const std::exception &e) {
+        Logger::debug("failed at stage: " + std::string(e.what()));
+        throw;
+    } catch (int &i) {
+        // dry run catch
+        throw i;
+    }
+
+    load_cache(CACHE_PATH);
+
+    for (auto &[_, src] : sources) {
+        try {
+            fs::path dep = depfile_path(src.path);
+            if (need_regen_deps(src.path, dep)) {
+                generate_deps(LOG_PATH, config, src);
+            }
+            load_compiler_deps(src);
+        } catch (const char *msg) {
+            Logger::printLogfile(LOG_PATH, config);
+            Logger::debug("failed at stage: " + std::string(msg));
+            throw;
+        }
+    }
+
+    mark_modified(config);
+
+    try {
+        modifications = compile_and_link(config);
     } catch (const char *msg) {
-      Logger::printLogfile(LOG_PATH, config);
-      Logger::debug("failed at stage: " + std::string(msg));
-      throw;
+        Logger::printLogfile(LOG_PATH, config);
+        Logger::debug("failed at stage: " + std::string(msg));
+        throw;
     }
-  }
 
-  
+    save_cache(CACHE_PATH);
+    if (modifications != 0)
+        Logger::successLog("build target: " + config.executable_name);
+    std::cout.flush();
 
-  mark_modified(config);
-
-  try {
-    modifications = compile_and_link(config);
-  } catch (const char *msg) {
-    Logger::printLogfile(LOG_PATH, config);
-    Logger::debug("failed at stage: " + std::string(msg));
-    throw;
-  }
-
-  save_cache(CACHE_PATH);
-  if (modifications != 0) Logger::successLog("build target: " + config.executable_name);
-  std::cout.flush();
-
-  if (config.run_mode) {
-    std::string executable_path = config.root_dir + "/build/" + config.executable_name;
-    std::cout << "\n";
-    if (config.watch_mode) {
-      if (modifications != 0) {
-        if (fs::exists(executable_path))
-          std::system(executable_path.c_str());
-      }
-    } else {
-      if (fs::exists(executable_path))
-        std::system(executable_path.c_str());
+    if (config.run_mode) {
+        std::string executable_path =
+            config.root_dir + "/build/" + config.executable_name;
+        std::cout << "\n";
+        if (config.watch_mode) {
+            if (modifications != 0) {
+                if (fs::exists(executable_path))
+                    std::system(executable_path.c_str());
+            }
+        } else {
+            if (fs::exists(executable_path))
+                std::system(executable_path.c_str());
+        }
     }
-  }
 }
 #endif

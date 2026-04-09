@@ -1,141 +1,141 @@
 #ifndef PARSECONF_H_
 #define PARSECONF_H_
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
-#include "toml.hh"
 #include "config.hh"
 #include "logger.hh"
+#include "toml.hh"
 
 void generate_example_config(const fs::path &path);
 void validate_config(const Config &c);
 
 // NOTE: currently, this function overrides cli.
 void load_toml_config(const fs::path &path, Config &config) {
-  toml::table tbl;
-  try {
-    tbl = toml::parse_file(path.string());
-  } catch (...) {
-    throw std::runtime_error(
-      "mkc_config.toml not found or can't be read."
-    );
-  }
+    toml::table tbl;
+    try {
+        tbl = toml::parse_file(path.string());
+    } catch (...) {
+        throw std::runtime_error("mkc_config.toml not found or can't be read.");
+    }
 
-  if (auto project = tbl["project"].as_table()) {
-    if (auto n = project->get("compiler"))
-      if (auto v = n->value<std::string>())
-        config.compiler = *v;
+    if (auto project = tbl["project"].as_table()) {
+        if (auto n = project->get("compiler"))
+            if (auto v = n->value<std::string>())
+                config.compiler = *v;
 
-    if (auto n = project->get("target_name"))
-      if (auto v = n->value<std::string>())
-        config.executable_name = *v;
+        if (auto n = project->get("target_name"))
+            if (auto v = n->value<std::string>())
+                config.executable_name = *v;
 
-    if (auto n = project->get("unity_build"))
-      if (auto v = n->value<bool>()) {
-        config.unity_b = *v;
-        if (*v) {
-          config.unity_src_name = fs::path("build") / "unity.cpp";
-          config.unity_obj = fs::path("build/obj") / config.unity_src_name.filename().replace_extension(".o");
-          config.exclude_dirs.push_back(fs::path("build"));
-        }
-      }
-
-    if (auto n = project->get("shared"))
-      if (auto v = n->value<bool>())
-        config.make_shared = *v;
-
-    if (auto arr = project->get("compile_flags"); arr && arr->is_array())
-      for (auto &&v : *arr->as_array())
-        if (auto s = v.value<std::string>())
-          config.compile_flags.emplace_back(*s);
-
-    if (auto arr = project->get("link_flags"); arr && arr->is_array())
-      for (auto &&v : *arr->as_array())
-        if (auto s = v.value<std::string>())
-          config.link_flags.emplace_back(*s);
-  }
-
-  if (auto paths = tbl["paths"].as_table()) {
-    if (auto arr = paths->get("sources"); arr && arr->is_array())
-      for (auto &&v : *arr->as_array())
-        if (auto s = v.value<std::string>())
-          config.explicit_sources.emplace_back(*s);
-
-    if (auto arr = paths->get("includes"); arr && arr->is_array())
-      for (auto &&v : *arr->as_array())
-        if (auto s = v.value<std::string>())
-          config.include_dirs.emplace_back(*s);
-
-    if (auto arr = paths->get("exclude_dirs"); arr && arr->is_array())
-      for (auto &&v : *arr->as_array())
-        if (auto s = v.value<std::string>())
-          config.exclude_dirs.emplace_back(*s);
-
-    if (auto arr = paths->get("exclude_exts"); arr && arr->is_array())
-      for (auto &&v : *arr->as_array())
-        if (auto s = v.value<std::string>())
-          config.exclude_exts.emplace_back(*s);
-
-
-    if (auto arr = paths->get("static_lib"); arr && arr->is_array()) {
-      for (auto &&elem : *arr->as_array()) {
-        if (auto lib_tbl = elem.as_table()) {
-          StaticLib lib;
-
-          if (auto n = lib_tbl->get("name"))
-            if (auto v = n->value<std::string>()) {
-              lib.name = *v;
-              fs::path tmp = lib.name;
-              lib.archive = tmp.replace_extension(".a");
+        if (auto n = project->get("unity_build"))
+            if (auto v = n->value<bool>()) {
+                config.unity_b = *v;
+                if (*v) {
+                    config.unity_src_name = fs::path("build") / "unity.cpp";
+                    config.unity_obj =
+                        fs::path("build/obj") /
+                        config.unity_src_name.filename().replace_extension(
+                            ".o");
+                    config.exclude_dirs.push_back(fs::path("build"));
+                }
             }
 
-          if (auto src_arr = lib_tbl->get("sources");
-              src_arr && src_arr->is_array())
-            for (auto &&v : *src_arr->as_array())
-              if (auto s = v.value<std::string>())
-                lib.sources.emplace_back(*s);
+        if (auto n = project->get("shared"))
+            if (auto v = n->value<bool>())
+                config.make_shared = *v;
 
-          if (auto inc_arr = lib_tbl->get("include_dirs");
-              inc_arr && inc_arr->is_array())
-            for (auto &&v : *inc_arr->as_array())
-              if (auto s = v.value<std::string>())
-                lib.include_dirs.emplace_back(*s);
+        if (auto arr = project->get("compile_flags"); arr && arr->is_array())
+            for (auto &&v : *arr->as_array())
+                if (auto s = v.value<std::string>())
+                    config.compile_flags.emplace_back(*s);
 
-          config.static_libs.push_back(std::move(lib));
+        if (auto arr = project->get("link_flags"); arr && arr->is_array())
+            for (auto &&v : *arr->as_array())
+                if (auto s = v.value<std::string>())
+                    config.link_flags.emplace_back(*s);
+    }
+
+    if (auto paths = tbl["paths"].as_table()) {
+        if (auto arr = paths->get("sources"); arr && arr->is_array())
+            for (auto &&v : *arr->as_array())
+                if (auto s = v.value<std::string>())
+                    config.explicit_sources.emplace_back(*s);
+
+        if (auto arr = paths->get("includes"); arr && arr->is_array())
+            for (auto &&v : *arr->as_array())
+                if (auto s = v.value<std::string>())
+                    config.include_dirs.emplace_back(*s);
+
+        if (auto arr = paths->get("exclude_dirs"); arr && arr->is_array())
+            for (auto &&v : *arr->as_array())
+                if (auto s = v.value<std::string>())
+                    config.exclude_dirs.emplace_back(*s);
+
+        if (auto arr = paths->get("exclude_exts"); arr && arr->is_array())
+            for (auto &&v : *arr->as_array())
+                if (auto s = v.value<std::string>())
+                    config.exclude_exts.emplace_back(*s);
+
+        if (auto arr = paths->get("static_lib"); arr && arr->is_array()) {
+            for (auto &&elem : *arr->as_array()) {
+                if (auto lib_tbl = elem.as_table()) {
+                    StaticLib lib;
+
+                    if (auto n = lib_tbl->get("name"))
+                        if (auto v = n->value<std::string>()) {
+                            lib.name = *v;
+                            fs::path tmp = lib.name;
+                            lib.archive = tmp.replace_extension(".a");
+                        }
+
+                    if (auto src_arr = lib_tbl->get("sources");
+                        src_arr && src_arr->is_array())
+                        for (auto &&v : *src_arr->as_array())
+                            if (auto s = v.value<std::string>())
+                                lib.sources.emplace_back(*s);
+
+                    if (auto inc_arr = lib_tbl->get("include_dirs");
+                        inc_arr && inc_arr->is_array())
+                        for (auto &&v : *inc_arr->as_array())
+                            if (auto s = v.value<std::string>())
+                                lib.include_dirs.emplace_back(*s);
+
+                    config.static_libs.push_back(std::move(lib));
+                }
+            }
         }
-      }
     }
-  }
 
-  if (auto pkg = tbl["pkg"].as_table()) {
-    if (auto arr = pkg->get("deps"); arr && arr->is_array()) {
-      for (auto &&v : *arr->as_array())
-        if (auto s = v.value<std::string>())
-          config.pkg_deps.push_back({*s});
+    if (auto pkg = tbl["pkg"].as_table()) {
+        if (auto arr = pkg->get("deps"); arr && arr->is_array()) {
+            for (auto &&v : *arr->as_array())
+                if (auto s = v.value<std::string>())
+                    config.pkg_deps.push_back({*s});
+        }
     }
-  }
 }
 
-
 void generate_example_config(const fs::path &path) {
-  if (fs::exists(path)) {
-    Logger::failLog(" Warning: mkc_config.toml already exists. Overwrite? (y/N): ");
-    std::string response;
-    std::getline(std::cin, response);
-    if (response != "y" && response != "Y") {
-      std::cout << "Aborted example config creation.\n";
-      return;
+    if (fs::exists(path)) {
+        Logger::failLog(
+            " Warning: mkc_config.toml already exists. Overwrite? (y/N): ");
+        std::string response;
+        std::getline(std::cin, response);
+        if (response != "y" && response != "Y") {
+            std::cout << "Aborted example config creation.\n";
+            return;
+        }
     }
-  }
 
-  std::ofstream file(path);
-  if (!file.is_open()) {
-    Logger::failLog("Failed to create mkc_config.toml");
-    return;
-  }
+    std::ofstream file(path);
+    if (!file.is_open()) {
+        Logger::failLog("Failed to create mkc_config.toml");
+        return;
+    }
 
-  file << R"(# example mkc_config.toml file
+    file << R"(# example mkc_config.toml file
 # Generated by command: mkc init
 # For details, check the readme at: 
 # https://github.com/Nytril-ark/mkc
@@ -162,6 +162,6 @@ include_dirs = []
 [pkg]
 deps = []
 )";
-  file.close();
+    file.close();
 }
-#endif 
+#endif

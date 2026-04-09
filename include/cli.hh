@@ -1,12 +1,11 @@
 #ifndef CLI_H_
 #define CLI_H_
-#include <iostream> 
-#include "parse_config.hh"
 #include "config.hh"
-
+#include "parse_config.hh"
+#include <iostream>
 
 void printHelp() {
-  std::cout << R"(
+    std::cout << R"(
 Usage: mkc [options]
 
 Config:
@@ -54,158 +53,161 @@ Examples:
 }
 
 Config parse_cli_args(int argc, char *argv[]) {
-  Config config;
+    Config config;
 
-  for (int i = 1; i < argc; i++) {
-    std::string arg = argv[i];
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
 
-    if (arg == "-h" || arg == "--help") {
-      config.show_help = true;
-      return config;
+        if (arg == "-h" || arg == "--help") {
+            config.show_help = true;
+            return config;
+        }
+
+        if (arg == "init") {
+            throw 1;
+        }
+
+        else if (arg == "-v" || arg == "--verbose") {
+            config.log_verbosity = Verbosity::verbose;
+        } else if (arg == "-d" || arg == "--debug-log") {
+            config.log_verbosity = Verbosity::debug;
+        } else if (arg == "-s" || arg == "--silent") {
+            config.log_verbosity = Verbosity::silent;
+        }
+
+        else if (arg == "-c" || arg == "--clean") {
+            config.rebuild_all = true;
+        } else if (arg == "-o" || arg == "--output") {
+            if (i + 1 < argc) {
+                config.executable_name = argv[++i];
+            } else {
+                throw std::runtime_error("--output requires an argument");
+            }
+        } else if (arg == "-j" || arg == "--jobs") {
+            if (i + 1 < argc) {
+                config.parallel_jobs = std::stoi(argv[++i]);
+            } else {
+                throw std::runtime_error("--jobs requires an argument");
+            }
+        }
+
+        else if (arg == "--compiler") {
+            if (i + 1 < argc) {
+                config.compiler = argv[++i];
+            } else {
+                throw std::runtime_error("--compiler requires an argument");
+            }
+        } else if (arg == "-I") {
+            if (i + 1 < argc) {
+                config.include_dirs.push_back(argv[++i]);
+            } else {
+                throw std::runtime_error("-I requires an argument");
+            }
+        } else if (arg == "-D") {
+            if (i + 1 < argc) {
+                config.compile_flags.push_back("-D" + std::string(argv[++i]));
+            } else {
+                throw std::runtime_error("-D requires an argument");
+            }
+        } else if (arg == "-O") {
+            if (i + 1 < argc) {
+                config.compile_flags.push_back("-O" + std::string(argv[++i]));
+            } else {
+                throw std::runtime_error("-O requires an argument");
+            }
+        } else if (arg == "-f") {
+            if (i + 1 < argc) {
+                config.compile_flags.push_back(argv[++i]);
+            } else {
+                throw std::runtime_error("-f requires an argument");
+            }
+        } else if (arg == "-l") {
+            if (i + 1 < argc) {
+                config.link_flags.push_back("-l" + std::string(argv[++i]));
+            } else {
+                throw std::runtime_error("-l requires an argument");
+            }
+        } else if (arg == "--link-flags") {
+            if (i + 1 < argc) {
+                config.link_flags.push_back(std::string(argv[++i]));
+            } else {
+                throw std::runtime_error("--link-flags requires an argument");
+            }
+        } else if (arg == "--exclude") {
+            if (i + 1 < argc) {
+                config.exclude_dirs.push_back(std::string(argv[++i]));
+            } else {
+                throw std::runtime_error("--exclude requires an argument");
+            }
+        } else if (arg == "--exclude-fmt") {
+            if (i + 1 < argc) {
+                config.exclude_exts.push_back(std::string(argv[++i]));
+            } else {
+                throw std::runtime_error("--exclude-fmt requires an argument");
+            }
+        } else if (arg == "--unity") {
+            if (i + 1 < argc) {
+                config.unity_b = true;
+                config.unity_src_name = fs::path("build") / argv[++i];
+                config.unity_obj =
+                    fs::path("build/obj") /
+                    config.unity_src_name.filename().replace_extension(".o");
+                config.exclude_dirs.push_back(fs::path("build"));
+            } else {
+                throw std::runtime_error("--unity-t requires an argument");
+            }
+        } else if (arg == "-L") {
+            if (i + 1 < argc) {
+                config.link_flags.push_back("-L" + std::string(argv[++i]));
+            } else {
+                throw std::runtime_error("-L requires an argument");
+            }
+        }
+
+        else if (arg == "--config") {
+            if (i + 1 < argc) {
+                config.config_file = argv[++i];
+            } else {
+                throw std::runtime_error("--config requires an argument");
+            }
+        } else if (arg == "--watch") {
+            config.watch_mode = true;
+        } else if (arg == "--run") {
+            config.run_mode = true;
+        } else if (arg == "--immediate") {
+            config.log_immediately = true;
+        } else if (arg == "--error-nums") {
+            config.error_nums = true;
+        } else if (arg == "--dry-run") {
+            config.dry_run = true;
+        } else if (arg == "--dry-run-toml") {
+            config.dry_run = true;
+            config.dry_run_toml = true;
+        } else if (arg == "--benchmark") {
+            config.benchmark = true;
+        } else if (arg == "--shared") {
+            config.make_shared = true;
+        } else if (arg == "--benchmark-msg") {
+            if (i + 1 < argc) {
+                config.benchmark_msg = argv[++i];
+            } else {
+                throw std::runtime_error(
+                    "--benchmark-msg requires an argument");
+            }
+        } else if (arg == "-r" || arg == "--root") {
+            if (i + 1 < argc) {
+                config.root_dir = argv[++i];
+            } else {
+                throw std::runtime_error("--root requires an argument");
+            }
+        }
+
+        else {
+            throw std::runtime_error("Unknown option: " + arg);
+        }
     }
 
-    if (arg == "init") {
-      throw 1;
-    }
-
-    else if (arg == "-v" || arg == "--verbose") {
-      config.log_verbosity = Verbosity::verbose;
-    } else if (arg == "-d" || arg == "--debug-log") {
-      config.log_verbosity = Verbosity::debug;
-    } else if (arg == "-s" || arg == "--silent") {
-      config.log_verbosity = Verbosity::silent;
-    }
-
-    else if (arg == "-c" || arg == "--clean") {
-      config.rebuild_all = true;
-    } else if (arg == "-o" || arg == "--output") {
-      if (i + 1 < argc) {
-        config.executable_name = argv[++i];
-      } else {
-        throw std::runtime_error("--output requires an argument");
-      }
-    } else if (arg == "-j" || arg == "--jobs") {
-      if (i + 1 < argc) {
-        config.parallel_jobs = std::stoi(argv[++i]);
-      } else {
-        throw std::runtime_error("--jobs requires an argument");
-      }
-    }
-
-    else if (arg == "--compiler") {
-      if (i + 1 < argc) {
-        config.compiler = argv[++i];
-      } else {
-        throw std::runtime_error("--compiler requires an argument");
-      }
-    } else if (arg == "-I") {
-      if (i + 1 < argc) {
-        config.include_dirs.push_back(argv[++i]);
-      } else {
-        throw std::runtime_error("-I requires an argument");
-      }
-    } else if (arg == "-D") {
-      if (i + 1 < argc) {
-        config.compile_flags.push_back("-D" + std::string(argv[++i]));
-      } else {
-        throw std::runtime_error("-D requires an argument");
-      }
-    } else if (arg == "-O") {
-      if (i + 1 < argc) {
-        config.compile_flags.push_back("-O" + std::string(argv[++i]));
-      } else {
-        throw std::runtime_error("-O requires an argument");
-      }
-    } else if (arg == "-f") {
-      if (i + 1 < argc) {
-        config.compile_flags.push_back(argv[++i]);
-      } else {
-        throw std::runtime_error("-f requires an argument");
-      }
-    } else if (arg == "-l") {
-      if (i + 1 < argc) {
-        config.link_flags.push_back("-l" + std::string(argv[++i]));
-      } else {
-        throw std::runtime_error("-l requires an argument");
-      }
-    } else if (arg == "--link-flags") {
-      if (i + 1 < argc) {
-        config.link_flags.push_back(std::string(argv[++i]));
-      } else {
-        throw std::runtime_error("--link-flags requires an argument");
-      }
-    } else if (arg == "--exclude") {
-      if (i + 1 < argc) {
-        config.exclude_dirs.push_back(std::string(argv[++i]));
-      } else {
-        throw std::runtime_error("--exclude requires an argument");
-      }
-    } else if (arg == "--exclude-fmt") {
-      if (i + 1 < argc) {
-        config.exclude_exts.push_back(std::string(argv[++i]));
-      } else {
-        throw std::runtime_error("--exclude-fmt requires an argument");
-      }
-    } else if (arg == "--unity") {
-      if (i + 1 < argc) {
-        config.unity_b = true;
-        config.unity_src_name = fs::path("build") / argv[++i];
-        config.unity_obj = fs::path("build/obj") / config.unity_src_name.filename().replace_extension(".o");
-        config.exclude_dirs.push_back(fs::path("build"));
-      } else {
-        throw std::runtime_error("--unity-t requires an argument");
-      }
-    } else if (arg == "-L") {
-      if (i + 1 < argc) {
-        config.link_flags.push_back("-L" + std::string(argv[++i]));
-      } else {
-        throw std::runtime_error("-L requires an argument");
-      }
-    }
-
-    else if (arg == "--config") {
-      if (i + 1 < argc) {
-        config.config_file = argv[++i];
-      } else {
-        throw std::runtime_error("--config requires an argument");
-      }
-    } else if (arg == "--watch") {
-      config.watch_mode = true;
-    } else if (arg == "--run") {
-      config.run_mode = true;
-    } else if (arg == "--immediate") {
-      config.log_immediately = true;
-    } else if (arg == "--error-nums") {
-      config.error_nums = true;
-    } else if (arg == "--dry-run") {
-      config.dry_run = true;
-    } else if (arg == "--dry-run-toml") {
-      config.dry_run = true;
-      config.dry_run_toml = true;
-    } else if (arg == "--benchmark") {
-      config.benchmark = true;
-    } else if (arg == "--shared") {
-      config.make_shared = true;
-    } else if (arg == "--benchmark-msg") {
-      if (i + 1 < argc) {
-        config.benchmark_msg = argv[++i];
-      } else {
-        throw std::runtime_error("--benchmark-msg requires an argument");
-      }
-    } else if (arg == "-r" || arg == "--root") {
-      if (i + 1 < argc) {
-        config.root_dir = argv[++i];
-      } else {
-        throw std::runtime_error("--root requires an argument");
-      }
-    }
-
-    else {
-      throw std::runtime_error("Unknown option: " + arg);
-    }
-  }
-
-  return config;
+    return config;
 }
 
 // void printHelp() {
