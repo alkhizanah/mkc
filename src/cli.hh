@@ -4,7 +4,7 @@
 #include "parse_config.hh"
 #include <iostream>
 
-void printHelp() {
+void print_help() {
     std::cout << R"(
 Usage: mkc [options]
 
@@ -209,50 +209,5 @@ Config parse_cli_args(int argc, char *argv[]) {
 
     return config;
 }
-
-// void printHelp() {
-//   std::cout << R"(
-// Usage: mkc [options]
-//
-// Config:
-//   --config <file>         Load configuration from file
-//   --watch                 Watch project directory for changes and rebuild.
-//   --run                   Run the executable after compilation
-//   -r, --root <dir>        Set project root directory (default: .)
-//   --track-external        Track external header dependencies
-//
-// Build Options:
-//   -o, --output <name>     Specify output executable name
-//   -j, --jobs <count>      Parallel compilation jobs (default: 1)
-//   -c, --clean             Clean build (rebuild all)
-//   --debug                 Debug build (build with debug symbols)
-//   --release               Release build (optimized, default)
-//
-// Compiler Options:
-//   --compiler <compiler>   Specify compiler (default: g++)
-//   -I <dir>                Add include directory
-//   -D <define>             Add preprocessor define
-//   -O <level>              Optimization level (0, 1, 2, 3, s)
-//   -f <flag>               Add compiler flag
-//   -l <lib>                Link library
-//   -L <dir>                Add library search path
-//   --link-flags            Add arbitrary flags for the linker
-//   --shared                Use when creating a shared object.
-//
-// Log Options:
-//   -h, --help              Show this help message
-//   -s, --silent            Suppress all non-error output
-//   -v, --verbose           Enable verbose logging
-//   -d, --debug-log         Enable debug logging (highest verbosity)
-//   --immediate             Force flushing all logs
-//
-// Examples:
-//   mkc                           # Normal build
-//   mkc --clean --debug           # Clean debug build
-//   mkc -j4 -O3                   # Parallel release build with -O3
-//   mkc --watch --run             # Watch, rebuild and run on changes
-//   mkc -o myapp -I./external     # Custom output name and includes
-// )";
-// }
 
 #endif

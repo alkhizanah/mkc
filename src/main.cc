@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     try {
         config = parse_cli_args(argc, argv);
     } catch (const std::exception &e) {
-        printHelp();
+        print_help();
         std::cerr << RED << "\nError: " << RESET << e.what() << "\n";
         return 1;
     } catch (const int &x) {
@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (config.show_help) {
-        printHelp();
+        print_help();
         return 0;
     }
 
